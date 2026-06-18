@@ -432,3 +432,42 @@ async function carregarMeusTickets() {
         container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>';
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const formRegistro = document.getElementById('form-registro');
+    
+    if (formRegistro) {
+        formRegistro.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Impede o recarregamento da página
+            
+            // Captura os valores
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-senha').value;
+            const statusDiv = document.getElementById('status-cadastro');
+
+            statusDiv.classList.remove('hidden');
+            statusDiv.innerText = "Processando...";
+
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.className = "text-green-500 text-center mt-4 font-bold";
+                    statusDiv.innerText = data.message;
+                    // Redireciona ou limpa o form após sucesso
+                } else {
+                    statusDiv.className = "text-red-500 text-center mt-4 font-bold";
+                    statusDiv.innerText = "Erro: " + (data.detail || "Falha ao cadastrar");
+                }
+            } catch (error) {
+                statusDiv.innerText = "Erro de conexão com o servidor.";
+            }
+        });
+    }
+});

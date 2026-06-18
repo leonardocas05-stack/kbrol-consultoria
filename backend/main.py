@@ -15,6 +15,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fpdf import FPDF
+from fastapi import status
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 # Configurações e Serviços Locais
 from config import supabase
@@ -232,3 +235,29 @@ async def pagina_admin(request: Request):
 async def rota_index_html(request: Request):
     # Redireciona para a raiz "/" que já está configurada
     return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
+
+class UserRegister(BaseModel):
+    email: str
+    password: str
+
+@app.post("/auth/register")
+async def register(user: UserRegister):
+    try:
+        # Chama o Supabase Auth para criar o usuário
+        response = supabase.auth.sign_up({
+            "email": user.email,
+            "password": user.password
+        })
+        
+        # O Supabase Auth retorna o usuário criado
+        if response.user:
+            return {
+                "status": "success",
+                "message": "Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta."
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Erro ao criar usuário.")
+            
+    except Exception as e:
+        # Tratamento de erro detalhado para o front-end
+        raise HTTPException(status_code=400, detail=str(e))
