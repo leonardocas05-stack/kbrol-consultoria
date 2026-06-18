@@ -435,18 +435,20 @@ async function carregarMeusTickets() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const formRegistro = document.getElementById('form-registro');
-    
+    const statusDiv = document.getElementById('status-cadastro');
+
     if (formRegistro) {
         formRegistro.addEventListener('submit', async (e) => {
             e.preventDefault(); // Impede o recarregamento da página
-            
-            // Captura os valores
+
+            // Pega os dados
             const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-senha').value;
-            const statusDiv = document.getElementById('status-cadastro');
 
+            // Mostra status de carregando
             statusDiv.classList.remove('hidden');
             statusDiv.innerText = "Processando...";
+            statusDiv.className = "text-center mt-4 font-bold p-2 text-gray-400";
 
             try {
                 const response = await fetch('/auth/register', {
@@ -458,15 +460,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    statusDiv.className = "text-green-500 text-center mt-4 font-bold";
+                    // SUCESSO: Mostra a mensagem do backend em verde
                     statusDiv.innerText = data.message;
-                    // Redireciona ou limpa o form após sucesso
+                    statusDiv.className = "text-green-500 text-center mt-4 font-bold p-2";
                 } else {
-                    statusDiv.className = "text-red-500 text-center mt-4 font-bold";
+                    // ERRO: Mostra o erro do backend em vermelho
                     statusDiv.innerText = "Erro: " + (data.detail || "Falha ao cadastrar");
+                    statusDiv.className = "text-red-500 text-center mt-4 font-bold p-2";
                 }
             } catch (error) {
                 statusDiv.innerText = "Erro de conexão com o servidor.";
+                statusDiv.className = "text-red-500 text-center mt-4 font-bold p-2";
             }
         });
     }
