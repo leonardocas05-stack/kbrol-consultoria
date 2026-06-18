@@ -261,15 +261,16 @@ function atualizarNavbar() {
         if (span) span.textContent = userData.nome || userData.email || 'Usuário';
 
         // Verifica se é admin para mostrar link especial
-        if (userData.role === 'admin') {
-            const menuContainer = document.getElementById('user-menu');
+        if (userData.role === 'admin' && userMenu) { // <-- AQUI A PROTEÇÃO
             if (!document.getElementById('link-admin')) {
                 const adminLink = document.createElement('a');
                 adminLink.id = 'link-admin';
                 adminLink.href = 'admin.html';
                 adminLink.className = 'text-red-500 font-bold mr-4 hover:underline';
                 adminLink.textContent = 'Painel Admin';
-                menuContainer.prepend(adminLink);
+                
+                // Só executa o prepend se o userMenu existir
+                userMenu.prepend(adminLink);
             }
         }
     } else {
