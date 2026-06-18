@@ -120,7 +120,7 @@ async function processarAuditoria() {
     if (!fileInput.files || fileInput.files.length === 0) return alert("Selecione um arquivo PDF ou DOCX!");
 
     const btn = document.getElementById('btn-auditar-trigger');
-    const statusDiv = document.getElementById('status-processamento');
+    const statusDiv = document.getElementById('status-processamento'); // Busca o elemento
     
     // Preparação dos dados para envio (Multipart)
     const formData = new FormData();
@@ -131,9 +131,14 @@ async function processarAuditoria() {
     formData.append("aprovacao_unanimidade", document.getElementById('aprovacao_unanimidade').checked);
 
     btn.disabled = true;
-    statusDiv.classList.remove('hidden');
-    statusDiv.innerHTML = "🔄 Iniciando auditoria societária...";
-    statusDiv.style.color = "#60a5fa"; 
+
+    // --- PROTEÇÃO AQUI ---
+    // Só executamos código na statusDiv se ela existir na página
+    if (statusDiv) {
+        statusDiv.classList.remove('hidden');
+        statusDiv.innerHTML = "🔄 Iniciando auditoria societária...";
+        statusDiv.style.color = "#60a5fa"; 
+    }
 
     try {
         const response = await fetch("/auditoria-inteligente/arquivo/", { 
@@ -145,12 +150,20 @@ async function processarAuditoria() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || "Erro no processamento");
         
-        statusDiv.innerHTML = `✅ Auditoria concluída!`;
-        statusDiv.style.color = "#4ade80"; 
+        // --- PROTEÇÃO AQUI ---
+        if (statusDiv) {
+            statusDiv.innerHTML = `✅ Auditoria concluída!`;
+            statusDiv.style.color = "#4ade80"; 
+        }
         renderizarResultado(data);
     } catch (error) {
-        statusDiv.innerHTML = "❌ Erro: " + error.message;
-        statusDiv.style.color = "#f87171";
+        // --- PROTEÇÃO AQUI ---
+        if (statusDiv) {
+            statusDiv.innerHTML = "❌ Erro: " + error.message;
+            statusDiv.style.color = "#f87171";
+        } else {
+            alert("Erro: " + error.message); // Fallback se a div não existir
+        }
     } finally {
         btn.disabled = false;
     }
