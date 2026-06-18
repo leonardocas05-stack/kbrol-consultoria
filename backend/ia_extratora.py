@@ -9,39 +9,37 @@ class IAExtratoraDeDados:
 
     def extrair_dados_para_json(self, texto_bruto_contrato: str) -> tuple:
         prompt = f"""
-        Você é um Extrator de Dados Jurídicos especializado em Direito Empresarial. 
-        Sua única função é ler a minuta societária abaixo e extrair as informações no formato JSON estrito.
+                # PERSONA
+            Você é um Engenheiro de Dados Jurídicos com doutorado em Direito Societário. Sua precisão é cirúrgica. Sua tarefa é analisar minutas societárias e extrair dados para automação de conformidade.
 
-        [TEXTO DO CONTRATO BRUTO]
-        {texto_bruto_contrato}
+            # DIRETRIZES DE PENSAMENTO (Chain of Thought)
+            Antes de gerar o JSON, siga rigorosamente este processo para cada campo:
+            1. LEITURA: Identifique a cláusula ou parágrafo relevante no [TEXTO DO CONTRATO].
+            2. ANÁLISE: Avalie se a informação é explícita, implícita ou ausente.
+            3. VALIDAÇÃO: Se o dado for ausente ou ambíguo, NÃO invente. Utilize os valores padrão definidos abaixo.
+            4. ATRIBUIÇÃO: Para cada campo extraído, forneça a "justificativa" (o trecho original do texto que sustenta sua resposta).
 
-        [ESTRUTURA JSON OBRIGATÓRIA]
-        Extraia os valores. Se a informação não existir no contrato, use falsos seguros (false para booleanos, 0 para números, "" para strings).
-        Retorne EXATAMENTE este formato JSON:
-        {{
-            "tipo_operacao": "Transformacao",
-            "tipo_sa": "Aberta ou Fechada",
-            "aprovacao_unanimidade": true ou false,
-            "previsao_estatuto_anterior": true ou false,
-            "prazo_oposicao_credores_dias": (número inteiro),
-            "previsao_direito_recesso": true ou false,
-            "prazo_pagamento_haveres_dias": (número inteiro),
-            "criterio_reembolso_dissidente": "valor_contabil_historico ou balanco_determinacao",
-            "nome_empresarial": "Nome da Empresa S.A.",
-            "objeto_social_preciso": true ou false,
-            "capital_dividido_acoes": true ou false,
-            "numero_socios": (número inteiro),
-            "percentual_acoes_sem_voto": (número float),
-            "capital_composto_bens": true ou false,
-            "bens_avaliados_peritos": true ou false,
-            "percentual_deposito_banco": (número float),
-            "registro_cvm": true ou false,
-            "conselho_administracao_estabelecido": true ou false,
-            "conselho_fiscal_estabelecido": true ou false,
-            "reserva_legal_prevista_percentual": (número float),
-            "regras_dividendos_definidas": true ou false
-        }}
-        """
+            # REGRAS DE EXTRAÇÃO
+            - Se o campo for BOOLEANO (true/false) e a informação não existir: use `false`.
+            - Se o campo for NUMÉRICO (inteiro/float) e não existir: use `0`.
+            - Se o campo for STRING e não existir: use `""` (vazio).
+            - Se houver conflito entre cláusulas, dê prioridade à cláusula mais específica ou à última alteração descrita no documento.
+
+            # FORMATO DE SAÍDA
+            Retorne APENAS um JSON estrito, seguindo esta estrutura para cada campo:
+            {
+            "nome_do_campo": {
+                "valor": (o valor extraído conforme tipo),
+                "justificativa": "O trecho exato do contrato que embasa este valor"
+            }
+            }
+
+            # CONTEXTO
+            [TEXTO DO CONTRATO]
+            {texto_bruto_contrato}
+
+            Inicie a extração agora.
+            """
        # O Proxy retorna (texto_resposta, nome_modelo)
         texto_resposta, modelo_usado = self.proxy.executar(
             prompt, 

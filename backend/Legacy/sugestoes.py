@@ -13,7 +13,7 @@ router = APIRouter(
 )
 
 # Inicializa o motor de IA especialista
-triagem_ia = IATriagemSugestoes()
+#triagem_ia = IATriagemSugestoes()
 
 # Inicialização segura do cliente Supabase para este módulo
 def get_supabase():

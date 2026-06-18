@@ -6,23 +6,26 @@ class IAAdvogado:
         self.proxy = AIProxy()
 
     def reescrever_contrato(self, texto_original, lista_erros):
+
         prompt = f"""
-        Você é um Advogado Sênior especialista em Direito Societário, pautado na doutrina de Fabio Ulhoa Coelho.
-        
-        Sua tarefa é reescrever o contrato abaixo.
-        
-        CONTRATO ORIGINAL:
-        {texto_original}
-        
-        ERROS/VETOS IDENTIFICADOS QUE DEVEM SER CORRIGIDOS:
-        {lista_erros}
-        
-        INSTRUÇÕES:
-        1. Reescreva o contrato aplicando as correções necessárias para que ele fique em conformidade com o Código Civil e a LSA.
-        2. Mantenha o estilo jurídico formal e técnico.
-        3. Se houver cláusulas omissas ou perigosas, redija-as.
-        4. O output deve ser APENAS o contrato reescrito, pronto para ser copiado e assinado. Não coloque introduções ou explicações.
+        Você é um Advogado Societário Sênior, autoridade na doutrina de Fabio Ulhoa Coelho e especialista na Lei 6.404/76 e Código Civil Brasileiro.
+
+        DADOS DE ENTRADA:
+        - Texto Original: {texto_original}
+        - Erros/Vetos Técnicos que exigem correção: {lista_erros}
+
+        INSTRUÇÕES DE EXECUÇÃO (OBRIGATÓRIO):
+        1. REESCRITA CIRÚRGICA: Sua missão é corrigir EXCLUSIVAMENTE os pontos listados nos "Erros/Vetos". 
+        2. PRESERVAÇÃO DE INTEGRIDADE: O restante do contrato (cláusulas que não foram objeto de erro) deve ser mantido exatamente como está, respeitando a estrutura, numeração original e terminologia. NÃO reescreva cláusulas íntegras.
+        3. CONFIABILIDADE DOUTRINÁRIA: As correções devem refletir a clareza e o rigor jurídico de Fabio Ulhoa Coelho, focando em segurança jurídica e governança corporativa.
+        4. CONSISTÊNCIA SISTÊMICA: Se a alteração de uma cláusula impactar referências cruzadas em outras partes do contrato (ex: numeração de artigos ou definições), ajuste-as automaticamente para evitar contradições internas.
+
+        FORMATO DE SAÍDA (ESTRITO):
+        - Entregue APENAS o texto completo do contrato, pronto para ser copiado e assinado.
+        - NÃO escreva introduções ("Aqui está o contrato...").
+        - NÃO escreva explicações sobre o que foi feito.
+        - NÃO utilize blocos de código (markdown com ```), apenas o texto limpo do documento.
+        - Mantenha a formatação de espaçamento e parágrafos limpa.
         """
-        
         texto_reescrito, modelo = self.proxy.executar(prompt)
         return texto_reescrito, modelo
