@@ -2,7 +2,7 @@
  * APP.JS - FINALIZADO, COMENTADO E INTEGRADO (RBAC)
  * Central de Controle da KBROL Consultoria Jurídica
  */
-
+console.log("--- VERSÃO DO SISTEMA: 2.0 (DEZEMBRO/2026) ---");
 // 1. INICIALIZAÇÃO DO SUPABASE
 const client = window.supabase.createClient(
     'https://ibsbtujgbjikqnfbnunw.supabase.co',
