@@ -117,23 +117,21 @@ async function fazerLogout() {
  */
 async function processarAuditoria() {
     const fileInput = document.getElementById('file-input');
+    // Verifica se os inputs existem antes de acessar
+    if (!fileInput) return alert("Erro crítico: Input de arquivo não encontrado.");
     if (!fileInput.files || fileInput.files.length === 0) return alert("Selecione um arquivo PDF ou DOCX!");
 
     const btn = document.getElementById('btn-auditar-trigger');
-    const statusDiv = document.getElementById('status-processamento'); // Busca o elemento
-    
-    // Preparação dos dados para envio (Multipart)
-    const formData = new FormData();
-    formData.append("arquivo", fileInput.files[0]);
-    formData.append("prazo_convocacao_assembleia_dias", document.getElementById('prazo_convocacao').value || 0);
-    formData.append("percentual_dividendo_obrigatorio", document.getElementById('dividendo_minimo').value || 0);
-    formData.append("conselho_fiscal_permanente", document.getElementById('conselho_fiscal').checked);
-    formData.append("aprovacao_unanimidade", document.getElementById('aprovacao_unanimidade').checked);
+    const statusDiv = document.getElementById('status-processamento');
+    const prazo = document.getElementById('prazo_convocacao');
+    const dividendo = document.getElementById('dividendo_minimo');
+    const conselho = document.getElementById('conselho_fiscal');
+    const unanimidade = document.getElementById('aprovacao_unanimidade');
 
-    btn.disabled = true;
+    // Desabilita o botão se ele existir
+    if (btn) btn.disabled = true;
 
-    // --- PROTEÇÃO AQUI ---
-    // Só executamos código na statusDiv se ela existir na página
+    // Atualiza o status de forma segura
     if (statusDiv) {
         statusDiv.classList.remove('hidden');
         statusDiv.innerHTML = "🔄 Iniciando auditoria societária...";
@@ -141,6 +139,14 @@ async function processarAuditoria() {
     }
 
     try {
+        const formData = new FormData();
+        formData.append("arquivo", fileInput.files[0]);
+        // Verifica se cada input existe antes de ler o .value
+        formData.append("prazo_convocacao_assembleia_dias", prazo ? prazo.value : 0);
+        formData.append("percentual_dividendo_obrigatorio", dividendo ? dividendo.value : 0);
+        formData.append("conselho_fiscal_permanente", conselho ? conselho.checked : false);
+        formData.append("aprovacao_unanimidade", unanimidade ? unanimidade.checked : false);
+
         const response = await fetch("/auditoria-inteligente/arquivo/", { 
             method: "POST", 
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') },
@@ -150,25 +156,22 @@ async function processarAuditoria() {
         const data = await response.json();
         if (!response.ok) throw new Error(data.detail || "Erro no processamento");
         
-        // --- PROTEÇÃO AQUI ---
         if (statusDiv) {
             statusDiv.innerHTML = `✅ Auditoria concluída!`;
             statusDiv.style.color = "#4ade80"; 
         }
         renderizarResultado(data);
     } catch (error) {
-        // --- PROTEÇÃO AQUI ---
         if (statusDiv) {
             statusDiv.innerHTML = "❌ Erro: " + error.message;
             statusDiv.style.color = "#f87171";
         } else {
-            alert("Erro: " + error.message); // Fallback se a div não existir
+            alert("Erro: " + error.message);
         }
     } finally {
-        btn.disabled = false;
+        if (btn) btn.disabled = false;
     }
 }
-
 /**
  * Exibe o resultado da auditoria na tela
  */
