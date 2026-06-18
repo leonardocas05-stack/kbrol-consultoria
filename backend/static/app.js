@@ -111,6 +111,50 @@ async function fazerLogout() {
     }
 }
 
+async function fazerCadastro() {
+    const statusDiv = document.getElementById('status-cadastro');
+    
+    // 1. Coleta de dados
+    const email = document.getElementById('reg-email').value;
+    const senha = document.getElementById('reg-senha').value;
+    const nome = document.getElementById('reg-nome').value;
+    const doc = document.getElementById('reg-doc').value;
+    const tipo = document.getElementById('reg-tipo').value;
+
+    if (!email || !senha || !nome) {
+        alert("Preencha os campos obrigatórios!");
+        return;
+    }
+
+    // 2. Feedback visual de carregando
+    statusDiv.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+    statusDiv.textContent = "🔄 Criando sua conta...";
+    statusDiv.style.color = "#60a5fa";
+
+    try {
+        // 3. Cadastro no Supabase Auth
+        const { data, error } = await client.auth.signUp({ email, password: senha });
+        if (error) throw error;
+
+        // 4. Criação do perfil na tabela 'perfis'
+        await client.from('perfis').insert([
+            { 
+                id: data.user.id,
+                nome_empresa: nome,
+                tipo_documento: tipo,
+                documento: doc,
+                role: 'user' 
+            }
+        ]);
+
+        statusDiv.textContent = "✅ Sucesso! Agora você pode fazer login.";
+        statusDiv.style.color = "#4ade80"; // Verde
+    } catch (e) {
+        statusDiv.textContent = "❌ Erro: " + e.message;
+        statusDiv.style.color = "#f87171"; // Vermelho
+    }
+}
+
 // 4. PIPELINE DE AUDITORIA
 /**
  * Coleta os arquivos e parâmetros do form e envia para o backend
