@@ -1,0 +1,20 @@
+<div id="tela-dashboard" class="view-section hidden space-y-8 bg-[#0a0a0a] min-h-screen p-6">
+    
+    <div class="bg-gray-900 p-8 rounded-2xl shadow-xl border border-gray-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h2 class="text-3xl font-black text-white">Painel de Controle Societário</h2>
+            <p class="text-gray-400 mt-1">Gerencie suas minutas contratuais e histórico de auditoria.</p>
+        </div>
+        <button onclick="trocarTela('tela-auditoria')" class="bg-[#991b1b] text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-[#7f1d1d] transition">
+            + Nova Auditoria
+        </button>
+    </div>
+
+    <div id="admin-shortcut" class="hidden bg-gray-800 p-6 rounded-2xl border border-red-900 mb-8">
+        <h3 class="text-white font-bold">Modo Administrador Ativo</h3>
+        <p class="text-gray-400 text-sm mb-4">Gerencie tickets e auditorias globais.</p>
+        <a href="admin.html" class="bg-[#991b1b] text-white px-4 py-2 rounded-lg font-bold">Acessar Painel Admin</a>
+    </div>
+
+    <div id="lista-auditorias" class="space-y-6"></div>
+</div>

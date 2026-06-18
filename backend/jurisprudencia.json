@@ -1,0 +1,24 @@
+[
+  {
+    "id_tese": 1,
+    "tema_juridico": "Falsa Transformação Societária",
+    "tribunal": "STJ",
+    "regra_para_ia": "Se o texto do contrato indicar que a origem da empresa é um Empresário Individual, a operação não pode ser classificada como Transformação Societária (Art. 220 da LSA / Art. 1.113 do CC).",
+    "alerta_gerado": "ALERTA TÉCNICO: O STJ consolidou que a conversão de Empresário Individual em Sociedade não configura 'Transformação' nos moldes da Lei das S.A., exigindo-se a constituição de nova sociedade."
+  },
+  {
+    "id_tese": 2,
+    "tema_juridico": "Dispensa de Diário Oficial",
+    "tribunal": "STF",
+    "regra_para_ia": "Validar a publicação de atos e balanços financeiros da S.A. mesmo que feitos exclusivamente em portais digitais na internet, sem exigir o meio impresso.",
+    "alerta_gerado": "SINAL VERDE (STF): Publicação validada. O STF declarou constitucional a dispensa de publicação dos atos societários em Diário Oficial."
+  },
+  {
+    "id_tese": 3,
+    "tema_juridico": "Sucessão Trabalhista e Blindagem de Sócios",
+    "tribunal": "STF",
+    "referencia": "Tema 1.232 da Repercussão Geral",
+    "regra_para_ia": "Procurar cláusulas no contrato que tentem isentar a nova Sociedade Anônima ou os sócios retirantes de passivos e dívidas trabalhistas anteriores à transformação.",
+    "alerta_gerado": "ALERTA VERMELHO (TEMA 1.232 STF): Cláusula com alto risco de nulidade. O STF permite o redirecionamento da execução trabalhista para a nova empresa sucessora e para os ex-sócios em caso de fraude ou abuso da personalidade jurídica (Art. 50 do CC)."
+  }
+]

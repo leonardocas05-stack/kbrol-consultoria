@@ -1,0 +1,21 @@
+# --- Motor Principal ---
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+# --- Banco de Dados ---
+supabase
+
+# --- Inteligência Artificial ---
+google-generativeai
+
+# --- Leitura de Arquivos ---
+python-multipart
+pymupdf
+python-docx
+
+# --- Motor de Interface ---
+jinja2
+
+fpdf

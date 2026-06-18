@@ -1,0 +1,46 @@
+<div id="tela-auditoria" class="view-section hidden space-y-8 bg-[#0a0a0a] min-h-screen p-6">
+    
+    <div class="max-w-3xl mx-auto text-center space-y-4">
+        <h2 class="text-4xl font-black text-white">Auditoria Inteligente</h2>
+        <p class="text-gray-400">Configure os parâmetros e envie seu contrato para auditoria jurídica automatizada.</p>
+    </div>
+
+    <div id="dropzone" class="max-w-2xl mx-auto border-2 border-dashed border-gray-700 rounded-3xl p-12 text-center hover:border-[#991b1b] transition-colors bg-gray-900">
+        <div class="text-6xl mb-4">📁</div>
+        <h3 class="text-xl font-bold mb-2 text-white">Selecione seu Contrato</h3>
+        <p class="text-sm text-gray-500 mb-6">Suporte a arquivos PDF e DOCX</p>
+        <input type="file" id="file-input" class="hidden" onchange="exibirNomeArquivo(this)">
+        <button onclick="document.getElementById('file-input').click()" class="bg-gray-800 text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-700 transition">Selecionar Arquivo</button>
+        <p id="nome-arquivo-selecionado" class="mt-4 font-bold text-[#991b1b] hidden"></p>
+    </div>
+
+    <div class="max-w-2xl mx-auto bg-gray-900 p-8 rounded-2xl border border-gray-800 space-y-6">
+        <h3 class="text-xl font-bold text-white mb-4 border-b border-gray-800 pb-2">Parâmetros da Auditoria</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Prazo Convocação (Dias)</label>
+                <input type="number" id="prazo_convocacao" class="w-full bg-[#1a1a1a] border border-gray-700 text-white p-2 rounded" placeholder="Ex: 8">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Dividendo Mínimo (%)</label>
+                <input type="number" id="dividendo_minimo" class="w-full bg-[#1a1a1a] border border-gray-700 text-white p-2 rounded" placeholder="Ex: 25">
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="conselho_fiscal" class="accent-[#991b1b]">
+                <label class="text-sm text-gray-300">Conselho Fiscal Permanente</label>
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="aprovacao_unanimidade" class="accent-[#991b1b]">
+                <label class="text-sm text-gray-300">Aprovação por Unanimidade</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center">
+        <button id="btn-auditar-trigger" onclick="processarAuditoria()" class="bg-[#991b1b] text-white px-12 py-4 rounded-lg font-bold shadow-lg hover:bg-[#7f1d1d] transition-all">
+            Iniciar Auditoria Completa
+        </button>
+    </div>
+</div>
+

@@ -1,0 +1,65 @@
+/* ==========================================================================
+   style.css - Central de Estilo da Legaltech 
+   ========================================================================== */
+
+/* 1. Ajustes Gerais de Estilo */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb; /* Cor de fundo suave para o dashboard */
+}
+
+/* 2. Regras de Impressão (O "Pulo do Gato" para o PDF oficial) */
+@media print {
+    /* Oculta elementos da interface (botões, menus, etc.) */
+    .no-print, nav, button, .hidden-print, footer {
+        display: none !important;
+    }
+
+    /* Reseta margens e padding para aproveitar o A4 */
+    @page {
+        margin: 2cm;
+    }
+
+    /* Estiliza o Laudo como um papel A4 oficial */
+    #resultado-auditoria {
+        display: block !important; /* Força visibilidade na impressão */
+        font-family: 'Times New Roman', serif;
+        color: #000;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        box-shadow: none; /* Remove sombras que não existem no papel */
+        border: none;
+    }
+
+    /* Ajuste fino nos títulos para documento jurídico */
+    #resultado-auditoria h3 {
+        font-size: 16pt;
+        font-weight: bold;
+        color: #000 !important;
+        border-bottom: 2px solid #000;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+    }
+
+    #resultado-auditoria p {
+        font-size: 12pt;
+        line-height: 1.5;
+        text-align: justify;
+    }
+}
+
+/* 3. Classes Customizadas para o Laudo (Versão Web) */
+.laudo-container {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Pequeno ajuste para garantir que o conteúdo não fique 'espremido' */
+#conteudo-laudo {
+    max-width: 800px;
+    margin: 0 auto;
+}

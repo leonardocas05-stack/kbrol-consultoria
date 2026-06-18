@@ -1,0 +1,32 @@
+<div id="tela-login" class="view-section hidden flex items-center justify-center min-h-[60vh] bg-[#0a0a0a]">
+    <div class="max-w-md w-full bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-800">
+        
+        <h2 class="text-3xl font-black text-white text-center mb-2">Acesso Restrito</h2>
+        <p class="text-center text-gray-400 mb-8 text-sm">
+            Entre com suas credenciais para acessar o painel de auditoria jurídica da KBROL.
+        </p>
+
+        <form class="space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-gray-400 mb-1">E-mail Corporativo</label>
+                <input type="email" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition" placeholder="advogado@escritorio.com.br">
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-400 mb-1">Senha</label>
+                <input type="password" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition" placeholder="••••••••">
+            </div>
+
+            <div class="flex items-start bg-[#1a1a1a] p-3 rounded border border-gray-700 mt-4">
+                <input type="checkbox" id="lgpd-check" class="mt-1 mr-3 w-4 h-4 text-[#991b1b] cursor-pointer accent-[#991b1b]">
+                <label for="lgpd-check" class="text-xs text-gray-400 leading-tight cursor-pointer">
+                    Ao prosseguir, você declara estar de acordo com o tratamento de dados sensíveis conforme os termos da Lei Geral de Proteção de Dados (LGPD). Concordo com a <span class="font-bold text-[#991b1b] underline">Política de Privacidade</span>.
+                </label>
+            </div>
+
+            <button type="button" onclick="trocarTela('tela-dashboard')" class="w-full bg-[#991b1b] text-white font-bold py-3.5 rounded-lg shadow-lg hover:bg-[#7f1d1d] transition-all tracking-wide mt-2">
+                Entrar na Plataforma
+            </button>
+        </form>
+
+    </div>
+</div>

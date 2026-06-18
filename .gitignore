@@ -1,0 +1,6 @@
+# Pastas que não devem ir para a nuvem
+venv/
+__pycache__/
+.env
+.DS_Store
+.vscode/

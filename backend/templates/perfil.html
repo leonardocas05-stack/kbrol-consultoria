@@ -1,0 +1,38 @@
+<!-- TELA DE PERFIL (DARK CORPORATE) -->
+<div id="tela-perfil" class="view-section hidden max-w-2xl mx-auto space-y-8 p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-800">
+    <h2 class="text-2xl font-black text-white">Meu Perfil</h2>
+        
+    <!-- Formulário de Dados Cadastrais -->
+    <form id="form-perfil" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" id="perfil-nome" placeholder="Nome/Empresa" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition">
+            <input type="text" id="perfil-telefone" placeholder="Telefone" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition">
+            
+            <input type="text" id="perfil-cnpj" placeholder="CNPJ/CPF" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition">
+            <input type="text" id="perfil-uf" placeholder="UF (ex: DF)" maxlength="2" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition">
+            <input type="number" id="perfil-capital" placeholder="Capital Social" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition">
+        </div>
+        <button type="submit" class="bg-[#991b1b] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#7f1d1d] transition">
+            Salvar Cadastro Completo
+        </button>
+    </form>
+
+    <hr class="border-gray-800">
+
+    <!-- Formulário de Alteração de Senha -->
+    <form id="form-senha" class="space-y-4">
+        <h3 class="font-bold text-lg text-white">Alterar Senha</h3>
+        <input type="password" id="nova-senha" placeholder="Nova Senha" class="w-full p-3 bg-[#1a1a1a] border border-gray-700 text-white rounded-lg focus:border-[#991b1b] outline-none transition">
+        <button type="submit" class="bg-gray-700 text-white px-6 py-2 rounded-lg font-bold hover:bg-gray-600 transition">
+            Atualizar Senha
+        </button>
+    </form>
+
+    <div class="mt-12 pt-8 border-t border-gray-800">
+        <h3 class="font-bold text-lg text-white mb-4">Meus Tickets de Suporte</h3>
+        <div id="container-tickets-usuario" class="space-y-4">
+            <p class="text-gray-500">Carregando seus tickets...</p>
+        </div>
+    </div>
+    
+</div>

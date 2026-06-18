@@ -1,0 +1,24 @@
+ <!-- arqivo legacy -->
+<div id="tela-sugestoes" class="view-section hidden space-y-8 max-w-3xl mx-auto py-8">
+    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <h2 class="text-3xl font-black text-texto-escuro mb-2">Colaborar com o Sistema</h2>
+        <p class="text-gray-500 mb-8">Encontrou uma tese nova ou uma atualização legislativa? Envie para triagem da nossa IA.</p>
+
+        <form id="form-sugestao" class="space-y-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Tipo de Sugestão</label>
+                <select id="tipo-sugestao" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none">
+                    <option value="Lei">Atualização Legislativa</option>
+                    <option value="Jurisprudência">Tese de Jurisprudência (STJ/STF)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">Conteúdo da Sugestão</label>
+                <textarea id="conteudo-sugestao" rows="6" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg outline-none" placeholder="Cole aqui o texto da decisão ou a fundamentação legal..."></textarea>
+            </div>
+            <button type="button" onclick="enviarSugestao()" class="w-full bg-primaria text-white font-bold py-3.5 rounded-lg hover:bg-green-600 transition">
+                Enviar para Triagem da IA
+            </button>
+        </form>
+    </div>
+</div>
