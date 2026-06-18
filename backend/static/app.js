@@ -172,6 +172,7 @@ async function processarAuditoria() {
         if (btn) btn.disabled = false;
     }
 }
+
 /**
  * Exibe o resultado da auditoria na tela
  */
