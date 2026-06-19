@@ -160,6 +160,25 @@ async function fazerCadastro() {
  * Coleta os arquivos e parâmetros do form e envia para o backend
  */
 async function processarAuditoria() {
+    console.log("DEBUG: Iniciando processarAuditoria..."); // LOG 1
+
+    const fileInput = document.getElementById('file-input');
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        console.log("DEBUG: Erro - Nenhum arquivo!");
+        return alert("Selecione um arquivo PDF ou DOCX!");
+    }
+    console.log("DEBUG: Arquivo encontrado:", fileInput.files[0].name); // LOG 2
+
+    // Corrigido para 'client'
+    const { data: { session } } = await client.auth.getSession(); 
+    
+    if (!session) {
+        console.log("DEBUG: Erro - Sessão nula!"); // LOG 3
+        alert("Sessão expirada. Por favor, faça login novamente.");
+        return;
+    }
+    console.log("DEBUG: Sessão ok, disparando Fetch..."); // LOG 4
+    
     // 1. Verificações de segurança iniciais
     const fileInput = document.getElementById('file-input');
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
