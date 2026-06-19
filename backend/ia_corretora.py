@@ -1,10 +1,7 @@
 # arquivo: ia_corretora.py
-from ai_proxy import AIProxy
+from ia_base import BaseIA
 
-class IACorretoraContratos:
-    def __init__(self):
-        self.proxy = AIProxy()
-
+class IACorretoraContratos(BaseIA):
     def redigir_clausula_corretiva(self, motivo_veto: str, contexto_contrato: str) -> tuple:
         """Gera cláusula corretiva e retorna o texto e o modelo utilizado."""
         prompt = f"""
@@ -35,5 +32,7 @@ class IACorretoraContratos:
             - Evite linguagem ambígua que possa gerar conflitos de interpretação em futuras Assembleias ou disputas judiciais.
             """
         
-        resposta_texto, modelo_usado = self.proxy.executar(prompt)
+        # Executa via BaseIA
+        resposta_texto, modelo_usado = self.executar(prompt, is_json=True)
+        
         return resposta_texto.strip(), modelo_usado

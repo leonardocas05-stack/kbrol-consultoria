@@ -1,22 +1,17 @@
-import os
-import uvicorn
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
-
+# arquivo: main.py
 import io
 import fitz
 import docx
 import hashlib
 import json
 import traceback
+import uvicorn
+import os
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, Response, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fpdf import FPDF
-from fastapi import status
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # Configurações e Serviços Locais
@@ -29,7 +24,7 @@ from modelos import ContratoSocietario
 from motor import MotorAuditoriaSA
 from jurisprudencia import OraculoJurisprudencial
 
-# Inteligências Artificiais
+# Inteligências Artificiais (Herança BaseIA já integrada nas classes)
 from ia_auditora import IAAuditoraJurisprudencial
 from ia_extratora import IAExtratoraDeDados
 from ia_corretora import IACorretoraContratos
@@ -56,21 +51,23 @@ security = HTTPBearer()
 # ==============================================================================
 
 async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verifica se o usuário possui a role de 'admin' no Supabase."""
     token = credentials.credentials
     try:
+        # Usa a instância 'supabase' padronizada (vinda de config.py)
         user_response = supabase.auth.get_user(token)
         user = user_response.user
         
-        # BUSCA O CAMPO 'role' AGORA
+        # Consulta de perfil com tratamento de erro
         profile = supabase.table("perfis").select("role").eq("id", user.id).single().execute()
         
-        # COMPARAÇÃO DE STRING (role == 'admin')
         if not profile.data or profile.data.get("role") != 'admin':
             raise HTTPException(status_code=403, detail="Acesso restrito a administradores.")
             
         return user
     except Exception as e:
         raise HTTPException(status_code=401, detail="Não autorizado")
+    
 
 # ==============================================================================
 # MOTOR DE PROCESSAMENTO
@@ -81,26 +78,26 @@ def calcular_hash(file_bytes):
 
 def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: str, filename: str):
     try:
-        # 1. Extração de Dados
+        # 1. Extração de Dados (Retorna dicionário de dados e modelo usado)
         dados_estruturados, mod1 = extratora_ia.extrair_dados_para_json(texto_contrato)
         contrato_obj = ContratoSocietario(**dados_estruturados)
         
-        # 2. Auditoria Regulatória
+        # 2. Auditoria Regulatória (Motor de regras local)
         motor = MotorAuditoriaSA(contrato_obj)
         laudo = motor.executar_auditoria_completa()
 
-        # 3. Análise Jurisprudencial
+        # 3. Análise Jurisprudencial (IA)
         laudo_jurisprudencial, mod2 = auditora_ia.analisar_contrato_com_jurisprudencia(texto_contrato)
 
-        # 4. Correções
+        # 4. Correções (IA)
         solucoes_geradas = []
-        if laudo.get("parecer"): # Ajustado para o nome do campo do seu motor padrão
+        if laudo.get("parecer"):
             for item in laudo["parecer"]:
                 if "VETO" in item:
                     clausula_pronta, mod3 = corretora_ia.redigir_clausula_corretiva(item, texto_contrato)
                     solucoes_geradas.append({"problema": item, "solucao_para_copiar": clausula_pronta})
         
-        # 5. Redação Final
+        # 5. Redação Final (IA)
         contrato_final_reescrito, mod4 = advogado_ia.reescrever_contrato(texto_contrato, laudo.get("parecer", []))
 
         resultado_final = {
@@ -113,7 +110,7 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
         }
        
         # 6. Persistência
-        auditoria_id = salvar_historico(supabase, user_id, resultado_final, file_hash, filename)
+        auditoria_id = salvar_historico(user_id, resultado_final, file_hash, filename)
         resultado_final["auditoria_id"] = auditoria_id
             
         return resultado_final
@@ -133,6 +130,7 @@ async def pagina_inicial(request: Request):
 @app.get("/auditorias/listar", dependencies=[Depends(validar_token)])
 async def listar_auditorias(user = Depends(validar_token)):
     try:
+        # Usa a instância padronizada 'supabase'
         resposta = supabase.table("auditorias_contratos")\
                            .select("*")\
                            .eq("usuario_id", user.user.id)\
@@ -155,7 +153,7 @@ async def auditoria_arquivo(
         blob = await arquivo.read()
         file_hash = calcular_hash(blob)
         
-        # Cache Check
+        # Cache Check usando a instância 'supabase'
         cache = supabase.table("auditorias_contratos").select("laudo_json, id").eq("file_hash", file_hash).execute()
         if cache.data and len(cache.data) > 0:
             res = json.loads(cache.data[0]["laudo_json"])
@@ -172,14 +170,16 @@ async def auditoria_arquivo(
             doc = docx.Document(io.BytesIO(blob))
             for p in doc.paragraphs: conteudo_texto += p.text + "\n"
         
+        # Chama a função refatorada no motor
         return processar_auditoria_completa(conteudo_texto, user.user.id, file_hash, arquivo.filename)
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Erro interno no motor: {str(e)}")
 
 @app.get("/auditoria/download-pdf/{auditoria_id}")
 async def baixar_pdf(auditoria_id: str, user = Depends(validar_token)):
     try:
+        # Usa a instância 'supabase'
         resposta = supabase.table("auditorias_contratos").select("*").eq("id", auditoria_id).eq("usuario_id", user.user.id).execute()
         if not resposta.data:
             raise HTTPException(status_code=404, detail="Auditoria não encontrada.")
@@ -202,19 +202,20 @@ async def baixar_pdf(auditoria_id: str, user = Depends(validar_token)):
         return Response(content=pdf_bytes, media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=laudo_{auditoria_id}.pdf"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
-
+    
 # ==============================================================================
 # ROTAS DO ADMINISTRADOR
 # ==============================================================================
 
 @app.get("/admin/auditorias/listar-todas")
 async def listar_todas_auditorias(current_user = Depends(get_admin_user)):
+    # Usa a instância padronizada 'supabase'
     result = supabase.table("auditorias_contratos").select("*").execute()
     return result.data
 
 @app.get("/admin/tickets/listar")
 async def listar_tickets(current_user = Depends(get_admin_user)):
-    # Removemos o .eq("status", "aberto") para listar TODOS
+    # Lista todos os tickets sem filtro, ordenados por data
     result = supabase.table("tickets").select("*").order("created_at", desc=True).execute()
     return result.data
 
@@ -224,6 +225,7 @@ async def responder_ticket(ticket_id: str, resposta_data: dict, current_user = D
         "resposta": resposta_data.get("resposta"),
         "status": "respondido"
     }
+    # Atualiza o ticket no Supabase
     supabase.table("tickets").update(update_data).eq("id", ticket_id).execute()
     return {"message": "Ticket respondido com sucesso!"}
 
@@ -233,11 +235,11 @@ async def pagina_admin(request: Request):
 
 @app.get("/index.html")
 async def rota_index_html(request: Request):
-    # Redireciona para a raiz "/" que já está configurada
     return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
-
-# Classe de registro
+# ==============================================================================
+# CLASSE DE REGISTRO E AUTENTICAÇÃO
+# ==============================================================================
 
 class UserRegister(BaseModel):
     email: str
@@ -247,12 +249,12 @@ class UserRegister(BaseModel):
 async def register(user: UserRegister):
     try:
         # Chama o Supabase Auth para criar o usuário
+        # O 'supabase' aqui já é a instância singleton configurada
         response = supabase.auth.sign_up({
             "email": user.email,
             "password": user.password
         })
         
-        # O Supabase Auth retorna o usuário criado
         if response.user:
             return {
                 "status": "success",
@@ -262,5 +264,4 @@ async def register(user: UserRegister):
             raise HTTPException(status_code=400, detail="Erro ao criar usuário.")
             
     except Exception as e:
-        # Tratamento de erro detalhado para o front-end
         raise HTTPException(status_code=400, detail=str(e))

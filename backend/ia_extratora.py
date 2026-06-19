@@ -1,13 +1,9 @@
 # arquivo: ia_extratora.py
 import json
-from ai_proxy import AIProxy
+from ia_base import BaseIA
 
-class IAExtratoraDeDados:
-    def __init__(self):
-        self.proxy = AIProxy()
-
+class IAExtratoraDeDados(BaseIA):
     def extrair_dados_para_json(self, texto_bruto_contrato: str) -> tuple:
-        # AQUI É ONDE VOCÊ COLA A ESTRUTURA RÍGIDA
         prompt = f"""
         # PERSONA
         Você é um Engenheiro de Dados Jurídicos com doutorado em Direito Societário. 
@@ -37,24 +33,22 @@ class IAExtratoraDeDados:
         {texto_bruto_contrato}
         """
 
-        texto_resposta, modelo_usado = self.proxy.executar(
-            prompt, 
-            generation_config={"response_mime_type": "application/json"}
-        )
+        # Executa via BaseIA (is_json=True garante a formatação)
+        texto_resposta, modelo_usado = self.executar(prompt, is_json=True)
         
         try:
             dados_brutos = json.loads(texto_resposta)
             
-            # --- LÓGICA DE TRANSFORMAÇÃO (ACHATAMENTO) ---
+            # --- LÓGICA DE TRANSFORMAÇÃO (ACHATAMENTO E LIMPEZA) ---
             dados_limpos = {}
             for campo, conteudo in dados_brutos.items():
                 val = conteudo.get("valor") if isinstance(conteudo, dict) else conteudo
                 
-                # Se for None, define um valor padrão baseado no campo
+                # Tratamento de nulos/vazios
                 if val is None:
                     if campo in ["numero_socios"]: val = 2
                     elif campo in ["prazo_oposicao_credores_dias"]: val = 0
-                    else: val = False # Para booleano ou string vazia
+                    else: val = False
                 
                 dados_limpos[campo] = val
             

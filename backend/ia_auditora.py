@@ -1,18 +1,19 @@
 # arquivo: ia_auditora.py
 import os
 import json
-from ai_proxy import AIProxy
+from ia_base import BaseIA
 
-class IAAuditoraJurisprudencial:
+class IAAuditoraJurisprudencial(BaseIA):
     def __init__(self):
+        super().__init__() # Inicializa a BaseIA e o self.proxy
         caminho_json = os.path.join(os.path.dirname(__file__), "jurisprudencia.json")
         with open(caminho_json, "r", encoding="utf-8") as f:
             self.banco_jurisprudencia = json.load(f)
-        self.proxy = AIProxy()
 
     def analisar_contrato_com_jurisprudencia(self, texto_contrato: str) -> tuple:
         """Analisa contrato e retorna o parecer e o modelo utilizado."""
         contexto_teses = json.dumps(self.banco_jurisprudencia, ensure_ascii=False)
+        
         prompt = f"""
         Você é um Auditor Jurídico Sênior, especialista em Direito Societário e Tribunais Superiores (STF e STJ).
         Sua missão é realizar um "Compliance Check" preventivo em minutas contratuais, cruzando-as com o nosso Banco de Jurisprudência.
@@ -48,6 +49,9 @@ class IAAuditoraJurisprudencial:
         - Utilize terminologia jurídica precisa e formal.
         - Não omita informações essenciais; o campo "alerta_gerado" deve ser fiel ao input fornecido.
         """
-        # Envia a ordem estruturada para a IA e recolhe a resposta
-        resposta_texto, modelo_usado = self.proxy.executar(prompt)
+        
+        # Envia a ordem estruturada para a IA via BaseIA
+        # O parâmetro is_json=True garante que o BaseIA configure o MimeType
+        resposta_texto, modelo_usado = self.executar(prompt, is_json=True)
+        
         return resposta_texto, modelo_usado

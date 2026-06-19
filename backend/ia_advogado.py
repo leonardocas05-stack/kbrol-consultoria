@@ -1,12 +1,11 @@
 # arquivo: ia_advogado.py
-from ai_proxy import AIProxy
+from ia_base import BaseIA
 
-class IAAdvogado:
-    def __init__(self):
-        self.proxy = AIProxy()
-
-    def reescrever_contrato(self, texto_original, lista_erros):
-
+class IAAdvogado(BaseIA):
+    def reescrever_contrato(self, texto_original, lista_erros) -> tuple:
+        """
+        Reescreve o contrato aplicando correções cirúrgicas.
+        """
         prompt = f"""
         Você é um Advogado Societário Sênior, autoridade na doutrina de Fabio Ulhoa Coelho e especialista na Lei 6.404/76 e Código Civil Brasileiro.
 
@@ -27,5 +26,8 @@ class IAAdvogado:
         - NÃO utilize blocos de código (markdown com ```), apenas o texto limpo do documento.
         - Mantenha a formatação de espaçamento e parágrafos limpa.
         """
-        texto_reescrito, modelo = self.proxy.executar(prompt)
+        
+        # Executa via BaseIA (is_json=False pois a saída é texto plano)
+        texto_reescrito, modelo = self.executar(prompt, is_json=False)
+        
         return texto_reescrito, modelo
