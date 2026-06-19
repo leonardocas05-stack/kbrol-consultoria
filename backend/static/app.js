@@ -160,22 +160,24 @@ async function fazerCadastro() {
  * Coleta os arquivos e parâmetros do form e envia para o backend
  */
 async function processarAuditoria() {
+    // 1. Verificações de segurança iniciais
     const fileInput = document.getElementById('file-input');
-    // Verifica se os inputs existem antes de acessar
-    if (!fileInput) return alert("Erro crítico: Input de arquivo não encontrado.");
-    if (!fileInput.files || fileInput.files.length === 0) return alert("Selecione um arquivo PDF ou DOCX!");
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        return alert("Selecione um arquivo PDF ou DOCX!");
+    }
 
+    // 2. Recuperar a sessão do Supabase (O Token necessário para o Backend)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+        return;
+    }
+
+    // Elementos da interface
     const btn = document.getElementById('btn-auditar-trigger');
     const statusDiv = document.getElementById('status-processamento');
-    const prazo = document.getElementById('prazo_convocacao');
-    const dividendo = document.getElementById('dividendo_minimo');
-    const conselho = document.getElementById('conselho_fiscal');
-    const unanimidade = document.getElementById('aprovacao_unanimidade');
 
-    // Desabilita o botão se ele existir
     if (btn) btn.disabled = true;
-
-    // Atualiza o status de forma segura
     if (statusDiv) {
         statusDiv.classList.remove('hidden');
         statusDiv.innerHTML = "🔄 Iniciando auditoria societária...";
@@ -185,41 +187,40 @@ async function processarAuditoria() {
     try {
         const formData = new FormData();
         formData.append("arquivo", fileInput.files[0]);
-        // Verifica se cada input existe antes de ler o .value
-        formData.append("prazo_convocacao_assembleia_dias", prazo ? prazo.value : 0);
-        formData.append("percentual_dividendo_obrigatorio", dividendo ? dividendo.value : 0);
-        formData.append("conselho_fiscal_permanente", conselho ? conselho.checked : false);
-        formData.append("aprovacao_unanimidade", unanimidade ? unanimidade.checked : false);
+        formData.append("prazo_convocacao_assembleia_dias", document.getElementById('prazo_convocacao')?.value || 0);
+        formData.append("percentual_dividendo_obrigatorio", document.getElementById('dividendo_minimo')?.value || 0);
+        formData.append("conselho_fiscal_permanente", document.getElementById('conselho_fiscal')?.checked || false);
+        formData.append("aprovacao_unanimidade", document.getElementById('aprovacao_unanimidade')?.checked || false);
 
-        try {
-    const response = await fetch('/auditoria-inteligente/arquivo/', {
-        method: 'POST',
-        body: formData // supondo que você está usando FormData
-    });
+        // 3. Executar o Fetch com autenticação
+        const response = await fetch('/auditoria-inteligente/arquivo/', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${session.access_token}` // <--- A CHAVE DO PROBLEMA
+            },
+            body: formData
+        });
 
-    // 1. Verifique se deu erro antes de tentar transformar em JSON
-    if (!response.ok) {
-        // Tente ler como texto primeiro para ver o erro do servidor
-        const erroTexto = await response.text(); 
-        console.error("Erro do Servidor:", erroTexto);
-        alert("Erro no servidor: " + (erroTexto || "Erro desconhecido"));
-        return; 
-    }
+        // 4. Tratamento de erro do servidor
+        if (!response.ok) {
+            const erroTexto = await response.text(); 
+            throw new Error(erroTexto || "Falha na comunicação com o servidor.");
+        }
 
-    // 2. Só agora tentamos o JSON
-    const data = await response.json();
-    console.log("Sucesso:", data);
-    
-} catch (error) {
-    console.error("Erro na conexão ou no processamento:", error);
-}
+        // 5. Sucesso
+        const data = await response.json();
+        console.log("Sucesso:", data);
         
         if (statusDiv) {
             statusDiv.innerHTML = `✅ Auditoria concluída!`;
             statusDiv.style.color = "#4ade80"; 
         }
+
+        // Renderiza o resultado aqui, onde o 'data' está definido
         renderizarResultado(data);
+
     } catch (error) {
+        console.error("Erro no processamento:", error);
         if (statusDiv) {
             statusDiv.innerHTML = "❌ Erro: " + error.message;
             statusDiv.style.color = "#f87171";
