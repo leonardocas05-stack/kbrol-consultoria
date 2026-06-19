@@ -2,6 +2,7 @@
 import json
 from ai_proxy import AIProxy
 
+
 class IAExtratoraDeDados:
     def __init__(self):
         # Inicializa o proxy que gerencia a fila de modelos
@@ -40,13 +41,26 @@ class IAExtratoraDeDados:
 
         Inicie a extração agora.
         """
+
        # O Proxy retorna (texto_resposta, nome_modelo)
         texto_resposta, modelo_usado = self.proxy.executar(
             prompt, 
-            generation_config={"response_mime_type": "application/json"}
+            generation_config={"{response_mime_type}": "application/json"}
         )
         
         try:
-            return json.loads(texto_resposta), modelo_usado
+            # Agora que temos o texto_resposta, podemos processá-lo
+            dados_brutos = json.loads(texto_resposta)
+            
+            # --- LÓGICA DE TRANSFORMAÇÃO (ACHATAMENTO) ---
+            dados_limpos = {}
+            for campo, conteudo in dados_brutos.items():
+                if isinstance(conteudo, dict) and "valor" in conteudo:
+                    dados_limpos[campo] = conteudo["valor"]
+                else:
+                    dados_limpos[campo] = conteudo 
+            
+            return dados_limpos, modelo_usado
+            
         except json.JSONDecodeError:
             raise ValueError("Falha da IA ao estruturar o contrato.")
