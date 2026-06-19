@@ -45,7 +45,7 @@ class IAExtratoraDeDados:
        # O Proxy retorna (texto_resposta, nome_modelo)
         texto_resposta, modelo_usado = self.proxy.executar(
             prompt, 
-            generation_config={"{response_mime_type}": "application/json"}
+            generation_config={"response_mime_type": "application/json"}
         )
         
         try:
