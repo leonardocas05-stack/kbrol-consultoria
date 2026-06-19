@@ -12,7 +12,7 @@ const KBROL = {
     state: { usuarioLogado: false, appIniciado: false }
 };
 
-const supabase = window.supabase.createClient(KBROL.config.supabaseUrl, KBROL.config.supabaseKey);
+window.supabaseClient = window.supabase.createClient(KBROL.config.supabaseUrl, KBROL.config.supabaseKey);
 
 // 2. AUTENTICAÇÃO (MANTIDA NO KERNEL)
 const Auth = {

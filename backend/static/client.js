@@ -75,11 +75,11 @@ const Client = {
 
     // 3. Gestão de Perfil
     async carregarPerfil() {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
         if (!user) return;
 
-        const { data: perfil } = await supabase.from('perfis').select('*').eq('id', user.id).single();
-        if (perfil) {
+        const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', user.id).single();
+          if (perfil) {
             document.getElementById('perfil-nome').value = perfil.nome_empresa || '';
             document.getElementById('perfil-telefone').value = perfil.telefone_whatsapp || '';
             document.getElementById('perfil-cnpj').value = perfil.cnpj || '';
@@ -90,8 +90,8 @@ const Client = {
     },
 
     async atualizarPerfil(dados) {
-        const { data: { user } } = await supabase.auth.getUser();
-        const { error } = await supabase.from('perfis').update(dados).eq('id', user.id);
+        const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', user.id).single();        const { error } = await supabase.from('perfis').update(dados).eq('id', user.id);
+        const { error } = await window.supabaseClient.from('perfis').update(dados).eq('id', user.id);
         if (error) alert("Erro ao salvar: " + error.message);
         else alert("Dados salvos com sucesso!");
     },

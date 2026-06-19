@@ -5,12 +5,12 @@
 
 // 1. PORTEIRO: Verifica acesso (Executa ao carregar o script)
 async function verificarAcessoAdmin() {
-    if (!window.supabase) return; // Segurança caso o app.js não tenha carregado
-    const { data: { user } } = await window.supabase.auth.getUser();
+    if (!window.supabaseClient) return; // Segurança
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
     
     if (!user) { window.location.href = 'index.html'; return; }
 
-    const { data: perfil, error } = await window.supabase.from('perfis').select('role').eq('id', user.id).single();
+    const { data: perfil, error } = await window.supabaseClient.from('perfis').select('role').eq('id', user.id).single();
     if (error || !perfil || perfil.role !== 'admin') {
         alert("Acesso Negado.");
         window.location.href = 'index.html';
