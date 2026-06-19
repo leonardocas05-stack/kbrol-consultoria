@@ -1,6 +1,7 @@
-# Pastas que não devem ir para a nuvem
-venv/
-__pycache__/
+# Arquivos que não devem ir para o GitHub
 .env
+__pycache__/
+*.pyc
+.venv/
+venv/
 .DS_Store
-.vscode/
