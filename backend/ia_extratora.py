@@ -48,10 +48,15 @@ class IAExtratoraDeDados:
             # --- LÓGICA DE TRANSFORMAÇÃO (ACHATAMENTO) ---
             dados_limpos = {}
             for campo, conteudo in dados_brutos.items():
-                if isinstance(conteudo, dict) and "valor" in conteudo:
-                    dados_limpos[campo] = conteudo["valor"]
-                else:
-                    dados_limpos[campo] = conteudo 
+                val = conteudo.get("valor") if isinstance(conteudo, dict) else conteudo
+                
+                # Se for None, define um valor padrão baseado no campo
+                if val is None:
+                    if campo in ["numero_socios"]: val = 2
+                    elif campo in ["prazo_oposicao_credores_dias"]: val = 0
+                    else: val = False # Para booleano ou string vazia
+                
+                dados_limpos[campo] = val
             
             return dados_limpos, modelo_usado
             

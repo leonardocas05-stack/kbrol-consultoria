@@ -10,7 +10,7 @@ class ContratoSocietario(BaseModel):
     
     # Quóruns e Credores (Art. 1.114 e 1.115 CC)
     aprovacao_unanimidade: bool
-    previsao_estatuto_anterior: bool
+    previsao_estatuto_anterior: bool = False
     prazo_oposicao_credores_dias: int
     
     # Direito de Recesso e Haveres
@@ -20,7 +20,7 @@ class ContratoSocietario(BaseModel):
 
     # Capital e Estrutura
     capital_dividido_acoes: bool
-    numero_socios: int
+    numero_socios: int = 2
     percentual_acoes_sem_voto: float
     capital_composto_bens: bool
     bens_avaliados_peritos: Optional[bool] = False
