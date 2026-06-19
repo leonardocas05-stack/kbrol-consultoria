@@ -1,49 +1,88 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KBROL | Consultoria Jurídica</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { 'fundo': '#0a0a0a', 'texto-escuro': '#ffffff', 'primaria': '#991b1b', 'alerta': '#7f1d1d', 'secundaria': '#94a3b8' } } } }
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body class="bg-fundo">
-    
-    {% include 'navbar.html' %}
-    
-    <main class="flex-grow max-w-6xl mx-auto px-4 py-8">
-        {% include 'quem_somos.html' %}
-        
-        {% include 'registro.html' %}
-        {% include 'login.html' %}
-        
-        {% include 'auditoria.html' %}
-        {% include 'dashboard.html' %}
-        {% include 'perfil.html' %}
-    </main>
+/**
+ * APP.JS - O KERNEL DO SISTEMA
+ */
 
-    <div id="modal-suporte" class="hidden fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-[9999]">
-        <div class="bg-gray-900 border border-red-900 p-8 rounded-lg w-96 shadow-2xl">
-            <h2 class="text-white text-xl font-bold mb-4">Abrir Novo Ticket</h2>
-            <input type="text" id="ticket-assunto" placeholder="Assunto" class="w-full bg-gray-800 text-white p-2 mb-4 rounded border border-gray-700">
-            <textarea id="ticket-mensagem" placeholder="Sua mensagem..." class="w-full bg-gray-800 text-white p-2 mb-4 rounded border border-gray-700"></textarea>
-            <div class="flex justify-end gap-2">
-                <button onclick="document.getElementById('modal-suporte').classList.add('hidden')" class="text-gray-400 hover:text-white">Cancelar</button>
-                <button onclick="enviarTicket()" class="bg-[#991b1b] text-white px-4 py-2 rounded">Enviar</button>
-            </div>
-        </div>
-    </div>
+// 1. CONFIGURAÇÃO
+const KBROL = {
+    config: {
+        supabaseUrl: 'https://ibsbtujgbjikqnfbnunw.supabase.co',
+        supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlic2J0dWpnYmppa3FuZmJudW53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNTU1MTQsImV4cCI6MjA5NTgzMTUxNH0.duxBXj1vANbAgEDel3uMevlRRFFzsGcEJI_jSyZ36JI'
+    },
+    state: { usuarioLogado: false, appIniciado: false }
+};
 
-    <script src="/static/app.js"></script>    <script src="/static/client.js"></script> <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Inicialização do fluxo
-            await Auth.validarSessao();
-            UI.trocarTela(KBROL.state.usuarioLogado ? 'tela-dashboard' : 'tela-login');
-        });
-    </script>
-</body>
-</html>
+// Aqui iniciamos o cliente com o nome window.supabaseClient
+window.supabaseClient = window.supabase.createClient(KBROL.config.supabaseUrl, KBROL.config.supabaseKey);
+
+// 2. AUTENTICAÇÃO
+const Auth = {
+    async validarSessao() {
+        // CORRIGIDO: Usando window.supabaseClient
+        const { data } = await window.supabaseClient.auth.getSession();
+        KBROL.state.usuarioLogado = !!data.session;
+        KBROL.state.appIniciado = true;
+        if (typeof UI !== 'undefined') UI.atualizarNavbar();
+        return KBROL.state.usuarioLogado;
+    },
+    async fazerLogin(email, senha) {
+        try {
+            // CORRIGIDO: Usando window.supabaseClient
+            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password: senha });
+            if (error) throw error;
+            localStorage.setItem('sb_token', data.session.access_token);
+            
+            // CORRIGIDO: Usando window.supabaseClient
+            const { data: perfil } = await window.supabaseClient.from('perfis').select('nome_empresa, role').eq('id', data.user.id).single();
+            localStorage.setItem('user_data', JSON.stringify({ email, nome: perfil?.nome_empresa, role: perfil?.role }));
+            
+            UI.atualizarNavbar();
+            UI.trocarTela('tela-dashboard');
+        } catch (e) { alert("Erro de Login: " + e.message); }
+    },
+    async fazerLogout() {
+        // CORRIGIDO: Usando window.supabaseClient
+        await window.supabaseClient.auth.signOut();
+        localStorage.clear();
+        window.location.href = '/'; 
+    }
+};
+
+// 3. UI GLOBAL
+const UI = {
+    trocarTela(idTelaAlvo) {
+        if (idTelaAlvo === 'tela-dashboard' && !KBROL.state.usuarioLogado) idTelaAlvo = 'tela-login';
+        document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+        document.getElementById(idTelaAlvo)?.classList.remove('hidden');
+        window.scrollTo(0, 0);
+    },
+    atualizarNavbar() {
+        const session = localStorage.getItem('sb_token');
+        const authBtns = document.getElementById('auth-buttons');
+        const userMenu = document.getElementById('user-menu');
+        
+        if (session) {
+            authBtns?.classList.add('hidden');
+            userMenu?.classList.remove('hidden');
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            document.getElementById('user-email').textContent = userData.nome || 'Usuário';
+        } else {
+            authBtns?.classList.remove('hidden');
+            userMenu?.classList.add('hidden');
+        }
+    },
+    exibirStatus(id, msg, cor) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = msg;
+            el.style.color = cor;
+            el.classList.remove('hidden');
+        }
+    }
+};
+
+// 4. PONTE PARA O HTML
+window.fazerLogin = Auth.fazerLogin;
+window.fazerLogout = Auth.fazerLogout;
+window.trocarTela = UI.trocarTela;
+window.Auth = Auth; // Exportando para o index.html conseguir usar
+window.UI = UI;

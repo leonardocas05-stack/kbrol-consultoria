@@ -1,9 +1,8 @@
 /**
  * APP.JS - O KERNEL DO SISTEMA
- * Responsável por: Configuração, Auth, Roteamento e Inicialização Global
  */
 
-// 1. CONFIGURAÇÃO E NAMESPACE GLOBAL
+// 1. CONFIGURAÇÃO (Usamos window.supabaseClient para evitar conflito com a biblioteca)
 const KBROL = {
     config: {
         supabaseUrl: 'https://ibsbtujgbjikqnfbnunw.supabase.co',
@@ -12,12 +11,13 @@ const KBROL = {
     state: { usuarioLogado: false, appIniciado: false }
 };
 
+// Aqui iniciamos o cliente com um nome único
 window.supabaseClient = window.supabase.createClient(KBROL.config.supabaseUrl, KBROL.config.supabaseKey);
 
-// 2. AUTENTICAÇÃO (MANTIDA NO KERNEL)
+// 2. AUTENTICAÇÃO
 const Auth = {
     async validarSessao() {
-        const { data } = await supabase.auth.getSession();
+        const { data } = await window.supabaseClient.auth.getSession();
         KBROL.state.usuarioLogado = !!data.session;
         KBROL.state.appIniciado = true;
         if (typeof UI !== 'undefined') UI.atualizarNavbar();
@@ -25,23 +25,21 @@ const Auth = {
     },
     async fazerLogin(email, senha) {
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+            const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password: senha });
             if (error) throw error;
             localStorage.setItem('sb_token', data.session.access_token);
-            const { data: perfil } = await supabase.from('perfis').select('nome_empresa, role').eq('id', data.user.id).single();
-            localStorage.setItem('user_data', JSON.stringify({ email, nome: perfil?.nome_empresa, role: perfil?.role }));
             UI.atualizarNavbar();
             UI.trocarTela('tela-dashboard');
         } catch (e) { alert("Erro: " + e.message); }
     },
     async fazerLogout() {
-        await supabase.auth.signOut();
+        await window.supabaseClient.auth.signOut();
         localStorage.clear();
         window.location.href = '/'; 
     }
 };
 
-// 3. UI GLOBAL (FUNÇÕES DE NAVEGAÇÃO)
+// 3. UI GLOBAL
 const UI = {
     trocarTela(idTelaAlvo) {
         if (idTelaAlvo === 'tela-dashboard' && !KBROL.state.usuarioLogado) idTelaAlvo = 'tela-login';
@@ -51,10 +49,16 @@ const UI = {
     },
     atualizarNavbar() {
         const session = localStorage.getItem('sb_token');
-        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-        document.getElementById('auth-buttons')?.classList.toggle('hidden', !!session);
-        document.getElementById('user-menu')?.classList.toggle('hidden', !session);
-        if (session) document.getElementById('user-email').textContent = userData.nome || 'Usuário';
+        const authBtns = document.getElementById('auth-buttons');
+        const userMenu = document.getElementById('user-menu');
+        
+        if (session) {
+            authBtns?.classList.add('hidden');
+            userMenu?.classList.remove('hidden');
+        } else {
+            authBtns?.classList.remove('hidden');
+            userMenu?.classList.add('hidden');
+        }
     }
 };
 
