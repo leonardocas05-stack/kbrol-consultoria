@@ -236,6 +236,9 @@ async def rota_index_html(request: Request):
     # Redireciona para a raiz "/" que já está configurada
     return templates.TemplateResponse(request=request, name="index.html", context={"request": request})
 
+
+# Classe de registro
+
 class UserRegister(BaseModel):
     email: str
     password: str

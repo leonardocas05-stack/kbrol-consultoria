@@ -2,54 +2,47 @@
 import json
 from ai_proxy import AIProxy
 
-
 class IAExtratoraDeDados:
     def __init__(self):
-        # Inicializa o proxy que gerencia a fila de modelos
         self.proxy = AIProxy()
 
     def extrair_dados_para_json(self, texto_bruto_contrato: str) -> tuple:
+        # AQUI É ONDE VOCÊ COLA A ESTRUTURA RÍGIDA
         prompt = f"""
         # PERSONA
-        Você é um Engenheiro de Dados Jurídicos com doutorado em Direito Societário. Sua precisão é cirúrgica. Sua tarefa é analisar minutas societárias e extrair dados para automação de conformidade.
+        Você é um Engenheiro de Dados Jurídicos com doutorado em Direito Societário. 
+        Sua tarefa é analisar minutas societárias e extrair dados para o modelo ContratoSocietario.
 
-        # DIRETRIZES DE PENSAMENTO (Chain of Thought)
-        Antes de gerar o JSON, siga rigorosamente este processo para cada campo:
-        1. LEITURA: Identifique a cláusula ou parágrafo relevante no [TEXTO DO CONTRATO].
-        2. ANÁLISE: Avalie se a informação é explícita, implícita ou ausente.
-        3. VALIDAÇÃO: Se o dado for ausente ou ambíguo, NÃO invente. Utilize os valores padrão definidos abaixo.
-        4. ATRIBUIÇÃO: Para cada campo extraído, forneça a "justificativa" (o trecho original do texto que sustenta sua resposta).
-
-        # REGRAS DE EXTRAÇÃO
-        - Se o campo for BOOLEANO (true/false) e a informação não existir: use `false`.
-        - Se o campo for NUMÉRICO (inteiro/float) e não existir: use `0`.
-        - Se o campo for STRING e não existir: use `""` (vazio).
-        - Se houver conflito entre cláusulas, dê prioridade à cláusula mais específica ou à última alteração descrita no documento.
-
-        # FORMATO DE SAÍDA
-        Retorne APENAS um JSON estrito, seguindo esta estrutura para cada campo:
+        # FORMATO DE SAÍDA (Siga rigorosamente)
+        Retorne APENAS um JSON estrito. Use exatamente os nomes de campos abaixo:
         {{
-            "nome_do_campo": {{
-                "valor": "o valor extraído conforme tipo",
-                "justificativa": "O trecho exato do contrato que embasa este valor"
-            }}
+            "tipo_sa": {{"valor": "S.A.", "justificativa": "..."}},
+            "tipo_operacao": {{"valor": "Transformacao", "justificativa": "..."}},
+            "nome_empresarial": {{"valor": "NOME DA EMPRESA S.A.", "justificativa": "..."}},
+            "aprovacao_unanimidade": {{"valor": true, "justificativa": "..."}},
+            "previsao_estatuto_anterior": {{"valor": false, "justificativa": "..."}},
+            "prazo_oposicao_credores_dias": {{"valor": 60, "justificativa": "..."}},
+            "capital_dividido_acoes": {{"valor": true, "justificativa": "..."}},
+            "numero_socios": {{"valor": 2, "justificativa": "..."}},
+            "percentual_acoes_sem_voto": {{"valor": 0.0, "justificativa": "..."}},
+            "capital_composto_bens": {{"valor": false, "justificativa": "..."}},
+            "percentual_deposito_banco": {{"valor": 10.0, "justificativa": "..."}},
+            "conselho_administracao_estabelecido": {{"valor": true, "justificativa": "..."}},
+            "objeto_social_preciso": {{"valor": true, "justificativa": "..."}},
+            "reserva_legal_prevista_percentual": {{"valor": 5.0, "justificativa": "..."}}
         }}
 
         # CONTEXTO
         [TEXTO DO CONTRATO]
         {texto_bruto_contrato}
-
-        Inicie a extração agora.
         """
 
-       # O Proxy retorna (texto_resposta, nome_modelo)
         texto_resposta, modelo_usado = self.proxy.executar(
             prompt, 
             generation_config={"response_mime_type": "application/json"}
         )
         
         try:
-            # Agora que temos o texto_resposta, podemos processá-lo
             dados_brutos = json.loads(texto_resposta)
             
             # --- LÓGICA DE TRANSFORMAÇÃO (ACHATAMENTO) ---
