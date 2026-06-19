@@ -191,14 +191,28 @@ async function processarAuditoria() {
         formData.append("conselho_fiscal_permanente", conselho ? conselho.checked : false);
         formData.append("aprovacao_unanimidade", unanimidade ? unanimidade.checked : false);
 
-        const response = await fetch("/auditoria-inteligente/arquivo/", { 
-            method: "POST", 
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') },
-            body: formData 
-        });
-        
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.detail || "Erro no processamento");
+        try {
+    const response = await fetch('/auditoria-inteligente/arquivo/', {
+        method: 'POST',
+        body: formData // supondo que você está usando FormData
+    });
+
+    // 1. Verifique se deu erro antes de tentar transformar em JSON
+    if (!response.ok) {
+        // Tente ler como texto primeiro para ver o erro do servidor
+        const erroTexto = await response.text(); 
+        console.error("Erro do Servidor:", erroTexto);
+        alert("Erro no servidor: " + (erroTexto || "Erro desconhecido"));
+        return; 
+    }
+
+    // 2. Só agora tentamos o JSON
+    const data = await response.json();
+    console.log("Sucesso:", data);
+    
+} catch (error) {
+    console.error("Erro na conexão ou no processamento:", error);
+}
         
         if (statusDiv) {
             statusDiv.innerHTML = `✅ Auditoria concluída!`;
