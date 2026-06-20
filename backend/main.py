@@ -131,7 +131,9 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
 
     except Exception as e:
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Erro interno no motor: {str(e)}")
+        supabase.table("auditorias_contratos").update({
+        "laudo_json": json.dumps({"erro": str(e)})
+    }).eq("id", auditoria_id).execute()
 
 # ==============================================================================
 # ROTAS DA API

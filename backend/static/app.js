@@ -168,6 +168,11 @@ const UI = {
         console.log("Dados recebidos pela UI para renderização:", data);
         const container = document.getElementById('resultado-auditoria');
        
+        if (data.erro) {
+        UI.exibirStatus('status-processamento', "❌ Erro no servidor: " + data.erro, "#f87171");
+        return;
+        }
+
         // Blindagem: Usamos (data.chave || []) para evitar o erro de 'undefined'
         const leiSeca = data.auditoria_lei_seca || [];
         const correcoes = data.correcoes_geradas || [];
