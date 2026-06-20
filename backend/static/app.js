@@ -140,7 +140,23 @@ const UI = {
             el.style.color = cor;
             el.classList.remove('hidden');
         }
-    }
+    },
+
+    // Exibe o nome do arquivo para o usuário confirmar
+    exibirNomeArquivo(input) {
+        const fileName = input.files[0]?.name;
+        const display = document.getElementById('nome-arquivo-selecionado');
+        
+        if (display) {
+            if (fileName) {
+                display.textContent = `Arquivo selecionado: ${fileName}`;
+                display.classList.remove('hidden');
+            } else {
+                display.classList.add('hidden');
+            }
+        }
+    },
+
 };
 
 // 4. PONTE (Sempre no final)
@@ -149,3 +165,4 @@ window.UI = UI;
 window.fazerLogin = Auth.fazerLogin;
 window.fazerLogout = Auth.fazerLogout;
 window.trocarTela = UI.trocarTela;
+window.exibirNomeArquivo = UI.exibirNomeArquivo;
