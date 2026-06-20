@@ -48,7 +48,12 @@ const Auth = {
                 .single();
             
             const nomeEmpresa = perfil?.nome_empresa || 'Usuário';
-            localStorage.setItem('user_data', JSON.stringify({ email, nome: nomeEmpresa }));
+            const userRole = perfil?.role || 'user';    
+            localStorage.setItem('user_data', JSON.stringify({ 
+                email, 
+                nome: nomeEmpresa, 
+                role: userRole 
+            }));
 
             // FORÇA O ESTADO COMO LOGADO ANTES DE TROCAR A TELA
             KBROL.state.usuarioLogado = true; 
@@ -120,16 +125,18 @@ const UI = {
 
     // Verifica se mostra o botão do Admin
     verificarAdminInterface() {
-        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-        const adminShortcut = document.getElementById('admin-shortcut');
-        
-        if (adminShortcut) {
-            if (userData.role === 'admin') {
-                adminShortcut.classList.remove('hidden');
-            } else {
-                adminShortcut.classList.add('hidden');
-            }
+    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+    const adminShortcut = document.getElementById('admin-shortcut');
+    
+    console.log("DEBUG: Verificando role...", userData.role); // Isso vai nos dizer o que ele está lendo
+
+    if (adminShortcut) {
+        if (userData.role === 'admin') {
+            adminShortcut.classList.remove('hidden');
+        } else {
+            adminShortcut.classList.add('hidden');
         }
+    }
     },
 
     // Feedback visual para o usuário
