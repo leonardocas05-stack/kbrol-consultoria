@@ -227,6 +227,19 @@ async def baixar_pdf(auditoria_id: str, user = Depends(validar_token)):
         return Response(content=pdf_bytes, media_type="application/pdf", headers={"Content-Disposition": f"attachment; filename=laudo_{auditoria_id}.pdf"})
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
+
+@app.get("/auditoria/status/{file_hash}", dependencies=[Depends(validar_token)])
+async def verificar_status_auditoria(file_hash: str, user = Depends(validar_token)):
+    # Verifica no banco se o registro já existe para este hash
+    resposta = supabase.table("auditorias_contratos")\
+                       .select("laudo_json")\
+                       .eq("file_hash", file_hash)\
+                       .execute()
+    
+    if resposta.data and len(resposta.data) > 0:
+        return {"status": "concluido", "laudo": json.loads(resposta.data[0]["laudo_json"])}
+    
+    return {"status": "processando"}
     
 # ==============================================================================
 # ROTAS DO ADMINISTRADOR

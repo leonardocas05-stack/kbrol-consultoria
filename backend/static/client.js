@@ -44,10 +44,15 @@ const Client = {
                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') },
                 body: formData
             });
-
+            
             if (!response.ok) throw new Error(await response.text());
 
             const data = await response.json();
+            if (data.status === "processando") {
+            UI.exibirStatus('status-processamento', "⏳ IA trabalhando no seu contrato... aguarde.", "#fbbf24");
+            // Inicia o monitoramento (Polling) passando o file_hash que você já calculou
+            monitorarStatus(file_hash); 
+    }
             UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
             UI.renderizarResultado(data);
         } catch (e) {
