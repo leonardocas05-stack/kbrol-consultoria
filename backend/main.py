@@ -6,8 +6,8 @@ import hashlib
 import json
 import traceback
 import uvicorn
-import os
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, Response, status
+
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, Response, status, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -155,6 +155,7 @@ async def listar_auditorias(user = Depends(validar_token)):
 
 @app.post("/auditoria-inteligente/arquivo/", dependencies=[Depends(validar_token)])
 async def auditoria_arquivo(
+    background_tasks: BackgroundTasks,
     arquivo: UploadFile = File(...), 
     prazo_convocacao_assembleia_dias: int = 0,
     percentual_dividendo_obrigatorio: float = 0,
@@ -182,9 +183,17 @@ async def auditoria_arquivo(
         elif extensao == "docx":
             doc = docx.Document(io.BytesIO(blob))
             for p in doc.paragraphs: conteudo_texto += p.text + "\n"
+
+        background_tasks.add_task(
+            processar_auditoria_completa, 
+            conteudo_texto, 
+            user.user.id, 
+            file_hash, 
+            arquivo.filename
+        )
         
-        # Chama a função refatorada no motor
-        return processar_auditoria_completa(conteudo_texto, user.user.id, file_hash, arquivo.filename)
+        return {"status": "processando", "mensagem": "A auditoria iniciou em segundo plano."}
+        
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Erro interno no motor: {str(e)}")
