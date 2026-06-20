@@ -24,11 +24,9 @@ const Client = {
     // 1. Processamento de Auditoria
     async processarAuditoria() {
         const fileInput = document.getElementById('file-input');
-        const statusDiv = document.getElementById('status-processamento');
         
         if (!fileInput?.files[0]) return alert("Selecione um arquivo!");
         
-        // UI.exibirStatus é global (vem do app.js/UI)
         UI.exibirStatus('status-processamento', "🔄 Iniciando auditoria...", "#60a5fa");
 
         const formData = new FormData();
@@ -44,20 +42,54 @@ const Client = {
                 headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') },
                 body: formData
             });
-            
-            if (!response.ok) throw new Error(await response.text());
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || "Erro ao iniciar auditoria");
+            }
 
             const data = await response.json();
+
+            // Verifica o status retornado pelo backend
             if (data.status === "processando") {
-            UI.exibirStatus('status-processamento', "⏳ IA trabalhando no seu contrato... aguarde.", "#fbbf24");
-            // Inicia o monitoramento (Polling) passando o file_hash que você já calculou
-            monitorarStatus(file_hash); 
-    }
-            UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
-            UI.renderizarResultado(data);
+                UI.exibirStatus('status-processamento', "⏳ IA analisando seu contrato...", "#fbbf24");
+                // Inicia o monitoramento usando o hash retornado pelo servidor
+                Client.monitorarStatus(data.file_hash); 
+            } else {
+                // Caso de cache (já processado) ou sucesso imediato
+                UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
+                UI.renderizarResultado(data);
+            }
         } catch (e) {
+            console.error("Erro no processamento:", e);
             UI.exibirStatus('status-processamento', "❌ Erro: " + e.message, "#f87171");
         }
+    },
+
+    async monitorarStatus(hash) {
+        // Definimos o intervalo de 10 segundos (10000ms)
+        const checar = setInterval(async () => {
+            try {
+                const response = await fetch(`/auditoria/status/${hash}`, { 
+                    headers: await Client.getHeaders() 
+                });
+                
+                if (!response.ok) throw new Error("Falha ao buscar status");
+                
+                const data = await response.json();
+
+                if (data.status === "concluido") {
+                    clearInterval(checar); // Para o ciclo de verificação
+                    UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
+                    
+                    // data.laudo contém o resultado final salvo no Supabase
+                    UI.renderizarResultado(data.laudo); 
+                }
+            } catch (e) {
+                console.error("Erro no polling:", e);
+                // Opcional: Se der erro muitas vezes, parar o interval para não inundar o servidor
+            }
+        }, 10000); 
     },
 
 

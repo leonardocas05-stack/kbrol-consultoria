@@ -91,6 +91,7 @@ def calcular_hash(file_bytes):
     return hashlib.sha256(file_bytes).hexdigest()
 
 def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: str, filename: str):
+    auditoria_id = None
     try:
         # 1. Extração de Dados (Retorna dicionário de dados e modelo usado)
         dados_estruturados, mod1 = extratora_ia.extrair_dados_para_json(texto_contrato)
@@ -131,10 +132,16 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
 
     except Exception as e:
         traceback.print_exc()
-        supabase.table("auditorias_contratos").update({
-        "laudo_json": json.dumps({"erro": str(e)})
-    }).eq("id", auditoria_id).execute()
-
+        # Só tenta salvar no banco se o ID tiver sido criado com sucesso
+        if auditoria_id:
+            try:
+                supabase.table("auditorias_contratos").update({"laudo_json": json.dumps({"erro": str(e)})}).eq("id", auditoria_id).execute()
+            except:
+                pass 
+        
+        # Não lança HTTPException aqui pois estamos em BackgroundTask
+        print(f"Erro processado em background: {str(e)}")
+        
 # ==============================================================================
 # ROTAS DA API
 # ==============================================================================

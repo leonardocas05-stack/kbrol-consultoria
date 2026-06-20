@@ -45,10 +45,13 @@ class IAExtratoraDeDados(BaseIA):
                 val = conteudo.get("valor") if isinstance(conteudo, dict) else conteudo
                 
                 # Tratamento de nulos/vazios
-                if val is None:
-                    if campo in ["numero_socios"]: val = 2
-                    elif campo in ["prazo_oposicao_credores_dias"]: val = 0
-                    else: val = False
+                if val is None or val is False:
+                    if campo in ["nome_empresarial", "tipo_sa", "tipo_operacao"]:
+                        val = "NÃO IDENTIFICADO" # Valor default seguro
+                    elif campo in ["numero_socios"]:
+                        val = 2
+                    else:
+                        val = False # Para campos que realmente são booleanos
                 
                 dados_limpos[campo] = val
             

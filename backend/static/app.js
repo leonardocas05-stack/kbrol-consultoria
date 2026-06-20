@@ -219,7 +219,7 @@ const UI = {
     
     container.classList.remove('hidden');
     container.scrollIntoView({ behavior: 'smooth' });
-},
+    },
 
 };
 
