@@ -57,35 +57,90 @@ const Auth = {
             UI.trocarTela('tela-dashboard');
         } catch (e) { alert("Erro de Login: " + e.message); }
     },
+    async fazerLogout() {
+        console.log("Executando Logout...");
+        try {
+            // 1. Lógica de Autenticação (Sempre no Auth)
+            if (window.supabaseClient) {
+                await window.supabaseClient.auth.signOut();
+            }
+        } catch (e) {
+            console.error("Erro no signOut do Supabase:", e);
+        } finally {
+            // 2. Limpeza de Dados (Sempre no Auth)
+            localStorage.clear();
+            
+            // 3. Redirecionamento (Side-effect necessário)
+            window.location.href = '/'; 
+        }
+    }
 };
 
-// 3. UI GLOBAL
+// 3. UI GLOBAL - Central de Interface
 const UI = {
+    // Alterna entre as seções (telas) da aplicação
     trocarTela(idTelaAlvo) {
-        if (idTelaAlvo === 'tela-dashboard' && !KBROL.state.usuarioLogado) idTelaAlvo = 'tela-login';
+        // Proteção: Se tentar ir para dashboard sem login, força o login
+        if (idTelaAlvo === 'tela-dashboard' && !KBROL.state.usuarioLogado) {
+            idTelaAlvo = 'tela-login';
+        }
+        
+        // Esconde todas as seções
         document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
-        const el = document.getElementById(idTelaAlvo);
-        if (el) el.classList.remove('hidden');
+        
+        // Mostra a tela alvo
+        const tela = document.getElementById(idTelaAlvo);
+        if (tela) {
+            tela.classList.remove('hidden');
+        }
+        window.scrollTo(0, 0);
     },
+
+    // Atualiza o menu superior conforme o estado de login
     atualizarNavbar() {
         const session = localStorage.getItem('sb_token');
         const authBtns = document.getElementById('auth-buttons');
         const userMenu = document.getElementById('user-menu');
-        const emailSpan = document.getElementById('user-email');
         
         if (session) {
             authBtns?.classList.add('hidden');
             userMenu?.classList.remove('hidden');
             
+            // Tenta pegar o nome do usuário salvo
             const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-            // Se o nome vier vazio ou "Sem empresa", tenta exibir o email
-            const nomeExibido = (userData.nome && userData.nome !== 'Sem empresa') ? userData.nome : (userData.email || 'Usuário');
-            if (emailSpan) emailSpan.textContent = nomeExibido;
+            const emailSpan = document.getElementById('user-email');
+            if (emailSpan) {
+                emailSpan.textContent = userData.nome || 'Usuário';
+            }
         } else {
             authBtns?.classList.remove('hidden');
             userMenu?.classList.add('hidden');
         }
     },
+
+    // Verifica se mostra o botão do Admin
+    verificarAdminInterface() {
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        const adminShortcut = document.getElementById('admin-shortcut');
+        
+        if (adminShortcut) {
+            if (userData.role === 'admin') {
+                adminShortcut.classList.remove('hidden');
+            } else {
+                adminShortcut.classList.add('hidden');
+            }
+        }
+    },
+
+    // Feedback visual para o usuário
+    exibirStatus(id, msg, cor) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = msg;
+            el.style.color = cor;
+            el.classList.remove('hidden');
+        }
+    }
 };
 
 // 4. PONTE (Sempre no final)

@@ -46,10 +46,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
-            console.log("Iniciando sistema...");
-            await Auth.validarSessao(); // Agora vai funcionar!
-            UI.trocarTela(KBROL.state.usuarioLogado ? 'tela-dashboard' : 'tela-login');
+            // 1. Valida a sessão
+            const logado = await Auth.validarSessao();
+            
+            // 2. Atualiza a UI baseada no login
+            UI.atualizarNavbar();
+
+            if (logado) {
+                UI.trocarTela('tela-dashboard');
+                // 3. Chama a função de carregamento do cliente
+                await Client.carregarDashboard();
+                // 4. Verifica se é admin para mostrar o botão
+                UI.vrificarAdminInterface();
+            } else {
+                UI.trocarTela('tela-login');
+            }
         });
     </script>
 </body>
-</html>
+</html> 
