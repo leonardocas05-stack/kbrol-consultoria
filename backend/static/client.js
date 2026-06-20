@@ -59,46 +59,23 @@ const Client = {
     // 2. Dashboard e Histórico
     async carregarDashboard() {
     const container = document.getElementById('lista-auditorias');
-    if (!container) {
-        console.error("DEBUG: Container #lista-auditorias não encontrado na tela.");
-        return;
-    }
-    
-    console.log("DEBUG: Iniciando busca de auditorias...");
+    if (!container) return;
     
     try {
         const response = await fetch('/auditorias/listar', { headers: await Client.getHeaders() });
-        
-        // DEBUG: Verificar resposta
-        console.log("DEBUG: Status da resposta:", response.status);
-        
-        if (!response.ok) {
-            console.error("DEBUG: Erro na requisição:", await response.text());
-            return;
-        }
-
         const data = await response.json();
-        console.log("DEBUG: Dados recebidos:", data);
         
+        // Aqui o innerHTML limpa os Skeletons e coloca os dados reais
         if (!data.auditorias || data.auditorias.length === 0) {
             container.innerHTML = '<p class="text-gray-500 text-center">Nenhuma auditoria encontrada.</p>';
             return;
         }
 
-        container.innerHTML = data.auditorias.map(aud => `
-            <div class="p-6 rounded-2xl bg-gray-900 border border-gray-800 flex justify-between items-center mb-4">
-                <div>
-                    <h3 class="font-bold text-white">${aud.nome_arquivo || "Minuta"}</h3>
-                    <p class="text-sm text-gray-400">Data: ${new Date(aud.created_at).toLocaleDateString()}</p>
-                </div>
-                <button onclick="Client.baixarPdf('${aud.id}')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-[#991b1b]">📥 PDF</button>
-            </div>`).join('');
-            
+        container.innerHTML = data.auditorias.map(aud => `...seu código de renderização...`).join('');
     } catch (e) { 
-        console.error("DEBUG: Erro crítico no carregarDashboard:", e);
         container.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar histórico.</p>'; 
     }
-},
+    },
 
     // 3. Gestão de Perfil
     async carregarPerfil() {
