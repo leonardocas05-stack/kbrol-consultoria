@@ -54,7 +54,7 @@ const Client = {
             if (data.status === "processando") {
                 UI.exibirStatus('status-processamento', "⏳ IA analisando seu contrato...", "#fbbf24");
                 // Inicia o monitoramento usando o hash retornado pelo servidor
-                Client.monitorarStatus(data.file_hash); 
+                Client.monitorarStatus(data.file_hash);
             } else {
                 // Caso de cache (já processado) ou sucesso imediato
                 UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
