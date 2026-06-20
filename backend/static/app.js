@@ -2,7 +2,7 @@
  * APP.JS - O KERNEL DO SISTEMA
  */
 
-// 1. CONFIGURAÇÃO (Usamos window.supabaseClient para evitar conflito com a biblioteca)
+// 1. CONFIGURAÇÃO
 const KBROL = {
     config: {
         supabaseUrl: 'https://ibsbtujgbjikqnfbnunw.supabase.co',
@@ -11,17 +11,31 @@ const KBROL = {
     state: { usuarioLogado: false, appIniciado: false }
 };
 
-// Aqui iniciamos o cliente com um nome único
-window.supabaseClient = window.supabase.createClient(KBROL.config.supabaseUrl, KBROL.config.supabaseKey);
+// --- NOVA LÓGICA DE INICIALIZAÇÃO SEGURA ---
+function initSupabase() {
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+        console.log("Supabase carregado com sucesso!");
+        window.supabaseClient = window.supabase.createClient(KBROL.config.supabaseUrl, KBROL.config.supabaseKey);
+        // Só inicializa o restante se o cliente existir
+        Auth.init();
+    } else {
+        console.error("Supabase não carregado! Tentando novamente em 500ms...");
+        setTimeout(initSupabase, 500);
+    }
+}
 
 // 2. AUTENTICAÇÃO
 const Auth = {
+    init() {
+        // Agora o init é chamado somente quando o supabaseClient existe
+        this.validarSessao();
+    },
     async validarSessao() {
+        if (!window.supabaseClient) return;
         const { data } = await window.supabaseClient.auth.getSession();
         KBROL.state.usuarioLogado = !!data.session;
         KBROL.state.appIniciado = true;
         if (typeof UI !== 'undefined') UI.atualizarNavbar();
-        return KBROL.state.usuarioLogado;
     },
     async fazerLogin(email, senha) {
         try {
