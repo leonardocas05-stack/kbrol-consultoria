@@ -67,6 +67,7 @@ const Client = {
     },
 
     async monitorarStatus(hash) {
+        console.log("DEBUG: Iniciando monitoramento para o hash:", hash);
         // Definimos o intervalo de 10 segundos (10000ms)
         const checar = setInterval(async () => {
             try {
@@ -79,6 +80,7 @@ const Client = {
                 const data = await response.json();
 
                 if (data.status === "concluido") {
+                    console.log("DEBUG: Status concluído detectado! Renderizando...");
                     clearInterval(checar); // Para o ciclo de verificação
                     UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
                     
