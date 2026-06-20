@@ -6,6 +6,7 @@ import hashlib
 import json
 import traceback
 import uvicorn
+import os
 
 from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, Response, status, BackgroundTasks
 from fastapi.staticfiles import StaticFiles
