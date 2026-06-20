@@ -159,3 +159,6 @@ window.enviarTicket = () => {
         document.getElementById('ticket-mensagem').value
     );
 };
+
+// 2. LOG DE SEGURANÇA (Para saber se o arquivo carregou)
+console.log("CLIENT.JS carregado com sucesso. Ponte criada para processarAuditoria.");
