@@ -12,6 +12,15 @@ const Client = {
         };
     },
 
+    // Inicialização de Eventos (O gatilho)
+    init() {
+        const btn = document.getElementById('btn-auditar-trigger');
+        if (btn) {
+            btn.addEventListener('click', Client.processarAuditoria);
+            console.log("Evento de auditoria acoplado com sucesso!");
+        }
+    },
+
     // 1. Processamento de Auditoria
     async processarAuditoria() {
         const fileInput = document.getElementById('file-input');
@@ -46,6 +55,7 @@ const Client = {
         }
     },
 
+
     // 2. Dashboard e Histórico
     async carregarDashboard() {
         const container = document.getElementById('lista-auditorias');
@@ -79,7 +89,7 @@ const Client = {
         if (!user) return;
 
         const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', user.id).single();
-          if (perfil) {
+        if (perfil) {
             document.getElementById('perfil-nome').value = perfil.nome_empresa || '';
             document.getElementById('perfil-telefone').value = perfil.telefone_whatsapp || '';
             document.getElementById('perfil-cnpj').value = perfil.cnpj || '';
@@ -90,7 +100,9 @@ const Client = {
     },
 
     async atualizarPerfil(dados) {
-        const { data: perfil } = await window.supabaseClient.from('perfis').select('*').eq('id', user.id).single();        const { error } = await supabase.from('perfis').update(dados).eq('id', user.id);
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) return;
+        
         const { error } = await window.supabaseClient.from('perfis').update(dados).eq('id', user.id);
         if (error) alert("Erro ao salvar: " + error.message);
         else alert("Dados salvos com sucesso!");
@@ -148,7 +160,20 @@ const Client = {
     }
 };
 
+// --- EVENTO DE CLIQUE (Substitui o onclick do HTML) ---
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btn-auditar-trigger');
+    if (btn) {
+        btn.addEventListener('click', Client.processarAuditoria);
+        console.log("Evento de auditoria acoplado com sucesso!");
+    } else {
+        console.error("Botão de auditoria não encontrado na tela!");
+    }
+});
+
+
 // Ponte para HTML (Mantendo compatibilidade com onclick="...")
+window.Client = Client;
 window.processarAuditoria = Client.processarAuditoria;
 window.carregarDashboard = Client.carregarDashboard;
 window.carregarPerfil = Client.carregarPerfil;
