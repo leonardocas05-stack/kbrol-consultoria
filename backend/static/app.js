@@ -165,62 +165,61 @@ const UI = {
     },
 
     renderizarResultado(data) {
-        console.log("Dados recebidos pela UI para renderização:", data);
-        const container = document.getElementById('resultado-auditoria');
-       
-        if (data.erro) {
-        UI.exibirStatus('status-processamento', "❌ Erro no servidor: " + data.erro, "#f87171");
+    const container = document.getElementById('resultado-auditoria');
+    
+    // 1. TRATAMENTO DE ESTADO DE PROCESSAMENTO
+    if (data.status === 'processando') {
+        UI.exibirStatus('status-processamento', "⏳ " + data.mensagem, "#fbbf24"); // Cor amarela
+        return; // Interrompe a execução aqui para não dar erro de .map()
+    }
+
+    // 2. CASO TENHA DADOS (Resultado final)
+    if (!container) {
+        console.error("Elemento #resultado-auditoria não encontrado!");
         return;
-        }
+    }
 
-        // Blindagem: Usamos (data.chave || []) para evitar o erro de 'undefined'
-        const leiSeca = data.auditoria_lei_seca || [];
-        const correcoes = data.correcoes_geradas || [];
+    // Blindagem defensiva: usa || [] para evitar o erro de 'undefined'
+    const leiSeca = data.auditoria_lei_seca || [];
+    const correcoes = data.correcoes_geradas || [];
 
+    container.innerHTML = `
+        <div class="laudo-container mt-8">
+            <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
+            
+            <div class="mb-6 p-4 rounded bg-gray-800">
+                <p class="font-bold text-gray-300">Nível de Risco: ${data.risco_judicializacao?.nivel_risco_litigio || 'Não analisado'}</p>
+            </div>
 
-        if (!container) {
-            console.error("Elemento #resultado-auditoria não encontrado no HTML!");
-            return;
-        }
+            <div class="mb-6">
+                <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
+                <ul class="list-disc pl-5 text-gray-400">
+                    ${leiSeca.map(item => `<li>${item}</li>`).join('')}
+                </ul>
+            </div>
 
-        // Monta o template do laudo com base na resposta do servidor (main.py)
-        container.innerHTML = `
-            <div class="laudo-container mt-8">
-                <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
-                
-                <div class="mb-6 p-4 rounded bg-gray-800">
-                    <p class="font-bold text-gray-300">Nível de Risco: ${data.risco_judicializacao?.nivel_risco_litigio || 'Não analisado'}</p>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
-                    <ul class="list-disc pl-5 text-gray-400">
-                        ${data.auditoria_lei_seca.map(item => `<li>${item}</li>`).join('')}
-                    </ul>
-                </div>
-
-                <div class="mb-6">
-                    <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
-                    ${data.correcoes_geradas.map(c => `
-                        <div class="bg-gray-800 p-4 rounded mb-2 border border-gray-700">
-                            <p class="text-sm font-bold text-red-400">${c.problema}</p>
-                            <pre class="text-xs text-white whitespace-pre-wrap mt-2">${c.solucao_para_copiar}</pre>
-                        </div>
-                    `).join('')}
-                </div>
-
-                <div class="mt-8">
-                    <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
-                    <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
-                        ${data.contrato_reescrito}
+            <div class="mb-6">
+                <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
+                ${correcoes.map(c => `
+                    <div class="bg-gray-800 p-4 rounded mb-2 border border-gray-700">
+                        <p class="text-sm font-bold text-red-400">${c.problema}</p>
+                        <pre class="text-xs text-white whitespace-pre-wrap mt-2">${c.solucao_para_copiar}</pre>
                     </div>
+                `).join('')}
+            </div>
+
+            <div class="mt-8">
+                <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
+                <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
+                    ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
                 </div>
             </div>
-        `;
-        
-        container.classList.remove('hidden');
-        container.scrollIntoView({ behavior: 'smooth' });
-    },
+        </div>
+    `;
+    
+    container.classList.remove('hidden');
+    container.scrollIntoView({ behavior: 'smooth' });
+},
 
 };
 
