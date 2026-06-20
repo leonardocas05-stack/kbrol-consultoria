@@ -37,18 +37,26 @@ const Auth = {
         try {
             const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password: senha });
             if (error) throw error;
+
             localStorage.setItem('sb_token', data.session.access_token);
-            // Salva dados no localStorage para evitar chamadas extras
-            localStorage.setItem('user_data', JSON.stringify({ email }));
+            
+            // Busca o perfil para garantir o nome da empresa
+            const { data: perfil } = await window.supabaseClient
+                .from('perfis')
+                .select('nome_empresa, role')
+                .eq('id', data.user.id)
+                .single();
+            
+            const nomeEmpresa = perfil?.nome_empresa || 'Usuário';
+            localStorage.setItem('user_data', JSON.stringify({ email, nome: nomeEmpresa }));
+
+            // FORÇA O ESTADO COMO LOGADO ANTES DE TROCAR A TELA
+            KBROL.state.usuarioLogado = true; 
+            
             UI.atualizarNavbar();
             UI.trocarTela('tela-dashboard');
         } catch (e) { alert("Erro de Login: " + e.message); }
     },
-    async fazerLogout() {
-        await window.supabaseClient.auth.signOut();
-        localStorage.clear();
-        window.location.reload();
-    }
 };
 
 // 3. UI GLOBAL
@@ -63,15 +71,21 @@ const UI = {
         const session = localStorage.getItem('sb_token');
         const authBtns = document.getElementById('auth-buttons');
         const userMenu = document.getElementById('user-menu');
+        const emailSpan = document.getElementById('user-email');
         
         if (session) {
             authBtns?.classList.add('hidden');
             userMenu?.classList.remove('hidden');
+            
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            // Se o nome vier vazio ou "Sem empresa", tenta exibir o email
+            const nomeExibido = (userData.nome && userData.nome !== 'Sem empresa') ? userData.nome : (userData.email || 'Usuário');
+            if (emailSpan) emailSpan.textContent = nomeExibido;
         } else {
             authBtns?.classList.remove('hidden');
             userMenu?.classList.add('hidden');
         }
-    }
+    },
 };
 
 // 4. PONTE (Sempre no final)
