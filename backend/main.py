@@ -33,6 +33,19 @@ from ia_advogado import IAAdvogado
 # Banco de Dados
 from database import salvar_historico
 
+# LOG DE DIAGNÓSTICO
+print("--- DIAGNÓSTICO DE ARQUIVOS ---")
+print("Diretório de trabalho atual:", os.getcwd())
+# Lista o que o servidor está vendo na pasta raiz
+print("Conteúdo da pasta raiz:", os.listdir('.')) 
+
+# Verifica se a pasta static existe
+if os.path.exists("static"):
+    print("Pasta 'static' encontrada. Conteúdo:", os.listdir("static"))
+else:
+    print("ERRO: Pasta 'static' NÃO encontrada na raiz!")
+print("-------------------------------")
+
 # Inicialização do App
 app = FastAPI(title="Legaltech Auditoria Societária")
 app.mount("/static", StaticFiles(directory="static"), name="static")
