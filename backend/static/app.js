@@ -164,84 +164,80 @@ const UI = {
         }
     },
 
-renderizarResultado(data) {
-    const container = document.getElementById('resultado-auditoria');
-    
-    // 1. TRATAMENTO DE ESTADO DE PROCESSAMENTO
-    if (data.status === 'processando') {
-        UI.exibirStatus('status-processamento', "⏳ " + data.mensagem, "#fbbf24"); // Cor amarela
-        return; // Interrompe a execução aqui para não dar erro de .map()
-    }
-
-    // 2. CASO TENHA DADOS (Resultado final)
-    if (!container) {
-        console.error("Elemento #resultado-auditoria não encontrado!");
-        return;
-    }
-
-    // Blindagem defensiva: usa || [] para evitar o erro de 'undefined'
-    const leiSeca = data.auditoria_lei_seca || [];
-    const correcoes = data.correcoes_geradas || [];
-
-    container.innerHTML = `
-        <div class="laudo-container mt-8">
-            <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
+    renderizarResultado(data) {
+            const container = document.getElementById('resultado-auditoria');
             
-            <div class="mb-6 p-4 rounded bg-gray-800">
-                <p class="font-bold text-gray-300">Nível de Risco: ${data.risco_judicializacao?.nivel_risco_litigio || 'Não analisado'}</p>
-            </div>
+            // Bloqueio de polling
+            if (data.status === 'processando') {
+                UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
+                return;
+            }
 
-            <div class="mb-6">
-                <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
-                <ul class="list-disc pl-5 text-gray-400">
-                    ${leiSeca.map(item => `<li>${item}</li>`).join('')}
-                </ul>
-            </div>
+            if (!container) return;
 
-            <div class="mb-6">
-                <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
-                ${correcoes.map(c => {
-                    let conteudoFormatado = "";
-                    try {
-                        // Tenta converter o JSON que vem da IA em objeto
-                        const solucaoObj = JSON.parse(c.solucao_para_copiar);
-                        
-                        // Formata cada campo, removendo underline e capitalizando
-                        conteudoFormatado = Object.entries(solucaoObj).map(([key, value]) => {
-                            const titulo = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+            // Resiliência no Risco
+            const risco = data.risco_judicializacao;
+            const nivelRisco = risco?.nivel_risco_litigio || risco?.nivel_risco || risco?.nivel || "Não identificado";
+
+            const leiSeca = data.auditoria_lei_seca || [];
+            const correcoes = data.correcoes_geradas || [];
+
+            container.innerHTML = `
+                <div class="laudo-container mt-8">
+                    <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
+                    
+                    <div class="mb-6 p-4 rounded bg-gray-800">
+                        <p class="font-bold text-gray-300">Nível de Risco: ${nivelRisco}</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
+                        <ul class="list-disc pl-5 text-gray-400">${leiSeca.map(item => `<li>${item}</li>`).join('')}</ul>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
+                        ${correcoes.map(c => {
+                            let conteudoFormatado = "";
+                            try {
+                                const solucaoObj = typeof c.solucao_para_copiar === 'string' 
+                                    ? JSON.parse(c.solucao_para_copiar) 
+                                    : c.solucao_para_copiar;
+                                
+                                conteudoFormatado = Object.entries(solucaoObj).map(([key, value]) => {
+                                    const titulo = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                                    return `
+                                        <div class="mb-4">
+                                            <p class="font-bold text-red-400 text-xs uppercase mb-1 border-b border-gray-700 inline-block">${titulo}</p>
+                                            <p class="text-gray-300 text-sm leading-relaxed">${value}</p>
+                                        </div>
+                                    `;
+                                }).join('');
+                            } catch (e) {
+                                conteudoFormatado = `<p class="text-white">${c.solucao_para_copiar}</p>`;
+                            }
+
                             return `
-                                <div class="mb-4">
-                                    <p class="font-bold text-red-400 text-xs uppercase mb-1 border-b border-gray-700 inline-block">${titulo}</p>
-                                    <p class="text-gray-300 text-sm leading-relaxed">${value}</p>
+                                <div class="bg-gray-800 p-6 rounded-lg mb-4 border border-gray-700 shadow-xl">
+                                    <p class="text-sm font-bold text-white mb-4 italic">${c.problema}</p>
+                                    ${conteudoFormatado}
                                 </div>
                             `;
-                        }).join('');
-                    } catch (e) {
-                        conteudoFormatado = `<p class="text-white">${c.solucao_para_copiar}</p>`;
-                    }
+                        }).join('')}
+                    </div>
 
-                    return `
-                        <div class="bg-gray-800 p-6 rounded-lg mb-4 border border-gray-700 shadow-xl">
-                            <p class="text-sm font-bold text-white mb-4 italic">Veto detectado: ${c.problema}</p>
-                            ${conteudoFormatado}
+                    <div class="mt-8">
+                        <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
+                        <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
+                            ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
                         </div>
-                    `;
-                }).join('')}
-            </div>
-
-            <div class="mt-8">
-                <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
-                <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
-                    ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
+                    </div>
                 </div>
-            </div>
-        </div>
-    `;
-    
-    container.classList.remove('hidden');
-    container.scrollIntoView({ behavior: 'smooth' });
-    },
-
+            `;
+            
+            container.classList.remove('hidden');
+            container.scrollIntoView({ behavior: 'smooth' });
+    }
 };
 
 // 4. PONTE (Sempre no final)
