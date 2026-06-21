@@ -102,13 +102,19 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
         laudo = motor.executar_auditoria_completa()
 
         # 3. Análise Jurisprudencial (IA)
-        laudo_jurisprudencial, mod2 = auditora_ia.analisar_contrato_com_jurisprudencia(texto_contrato)
+        laudo_texto, mod2 = auditora_ia.analisar_contrato_com_jurisprudencia(texto_contrato)
+
+        #limpa o laudo
+        laudo_texto_limpo = laudo_texto.replace("```json", "").replace("```", "").strip()
         
         # Converter a string da IA para um dicionário Python real
         try:
-            laudo_jurisprudencial = json.loads(laudo_texto)
-        except:
-            laudo_jurisprudencial = {"nivel_risco_litigio": "Não analisado", "parecer_juridico": "Erro ao processar análise."}
+            # Agora 'laudo_texto' (ou 'laudo_texto_limpo') está definido e pode ser lido
+            laudo_jurisprudencial = json.loads(laudo_texto_limpo)
+        except Exception as e:
+            print(f"ERRO AO PROCESSAR JSON DA IA: {e}")
+            # Fallback seguro caso a IA falhe
+            laudo_jurisprudencial = {"nivel_risco_litigio": "Não analisado", "parecer_juridico": "Erro na análise."}
 
 
 
