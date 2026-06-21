@@ -2,7 +2,7 @@
  * CLIENT.JS - Módulo de Ações do Cliente
  * Responsável por: Auditorias, Dashboard e Perfil do Usuário
  */
-
+console.log("CLIENT.JS está carregando...");
 const Client = {
     // Helper privado para headers de autenticação
     async getHeaders() {

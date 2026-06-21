@@ -3,6 +3,7 @@
  */
 
 // 1. CONFIGURAÇÃO GLOBAL
+console.log("APP.JS está carregando...");
 const KBROL = {
     config: {
         supabaseUrl: 'https://ibsbtujgbjikqnfbnunw.supabase.co',
@@ -80,6 +81,12 @@ const Auth = {
         }
     }
 };
+
+// Ponte com o resto do código
+window.Auth = Auth;
+window.fazerLogin = Auth.fazerLogin;
+window.fazerLogout = Auth.fazerLogout;
+
 
 // 3. UI GLOBAL - Central de Interface
 const UI = {
@@ -240,10 +247,7 @@ const UI = {
     }
 };
 
-// 4. PONTE (Sempre no final)
-window.Auth = Auth;
-window.UI = UI;
-window.fazerLogin = Auth.fazerLogin;
-window.fazerLogout = Auth.fazerLogout;
+// Ponte com o resto do código
 window.trocarTela = UI.trocarTela;
 window.exibirNomeArquivo = UI.exibirNomeArquivo;
+window.UI = UI;
