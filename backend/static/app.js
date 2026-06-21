@@ -104,6 +104,13 @@ const UI = {
         const tela = document.getElementById(idTelaAlvo);
         if (tela) {
             tela.classList.remove('hidden');
+
+            if (idTelaAlvo === 'tela-perfil') {
+                console.log("DEBUG: Iniciando carregamento do perfil...");
+                if (typeof Client !== 'undefined') {
+                    Client.carregarPerfil(); 
+                }
+            }
         }
         window.scrollTo(0, 0);
     },

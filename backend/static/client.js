@@ -169,22 +169,31 @@ const Client = {
     },
 
     async carregarMeusTickets() {
-        const container = document.getElementById('container-tickets-usuario');
-        if (!container) return;
+    const container = document.getElementById('container-tickets-usuario');
+    if (!container) return;
+    
+    try {
+        const response = await fetch('/tickets/me', { headers: await Client.getHeaders() });
+        const data = await response.json();
         
-        try {
-            const response = await fetch('/tickets/me', { headers: await Client.getHeaders() });
-            const data = await response.json();
-            
+        console.log("DEBUG TICKETS: Resposta do servidor:", data); // Isso é vital
+        
+        if (data.tickets && data.tickets.length > 0) {
             container.innerHTML = data.tickets.map(t => `
                 <div class="p-3 bg-gray-800 rounded border border-gray-700">
                     <p class="font-bold text-white">${t.assunto}</p>
                     <p class="text-sm text-gray-400">${t.texto}</p>
                 </div>
             `).join('');
-        } catch (e) { container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>'; }
+        } else {
+            container.innerHTML = '<p class="text-gray-500">Nenhum ticket encontrado.</p>';
+        }
+    } catch (e) { 
+        console.error("DEBUG TICKETS: Erro crítico:", e); // Veja o erro aqui
+        container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>'; 
+    }
     },
-
+    
     // 5. Utilidades
     async baixarPdf(auditoriaId) {
         try {
