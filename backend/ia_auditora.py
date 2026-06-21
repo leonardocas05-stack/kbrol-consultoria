@@ -34,6 +34,7 @@ class IAAuditoraJurisprudencial(BaseIA):
         "conformidade": boolean,
         "riscos_identificados": [
             {{
+            "nivel_risco_litigio": "BAIXO/MÉDIO/ALTO",
             "tema_juridico": "string",
             "clausula_envolvida": "string",
             "explicacao_risco": "análise técnica detalhada sobre o risco",

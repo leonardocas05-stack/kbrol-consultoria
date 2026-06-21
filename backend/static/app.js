@@ -164,7 +164,7 @@ const UI = {
         }
     },
 
-    renderizarResultado(data) {
+renderizarResultado(data) {
     const container = document.getElementById('resultado-auditoria');
     
     // 1. TRATAMENTO DE ESTADO DE PROCESSAMENTO
@@ -200,12 +200,33 @@ const UI = {
 
             <div class="mb-6">
                 <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
-                ${correcoes.map(c => `
-                    <div class="bg-gray-800 p-4 rounded mb-2 border border-gray-700">
-                        <p class="text-sm font-bold text-red-400">${c.problema}</p>
-                        <pre class="text-xs text-white whitespace-pre-wrap mt-2">${c.solucao_para_copiar}</pre>
-                    </div>
-                `).join('')}
+                ${correcoes.map(c => {
+                    let conteudoFormatado = "";
+                    try {
+                        // Tenta converter o JSON que vem da IA em objeto
+                        const solucaoObj = JSON.parse(c.solucao_para_copiar);
+                        
+                        // Formata cada campo, removendo underline e capitalizando
+                        conteudoFormatado = Object.entries(solucaoObj).map(([key, value]) => {
+                            const titulo = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                            return `
+                                <div class="mb-4">
+                                    <p class="font-bold text-red-400 text-xs uppercase mb-1 border-b border-gray-700 inline-block">${titulo}</p>
+                                    <p class="text-gray-300 text-sm leading-relaxed">${value}</p>
+                                </div>
+                            `;
+                        }).join('');
+                    } catch (e) {
+                        conteudoFormatado = `<p class="text-white">${c.solucao_para_copiar}</p>`;
+                    }
+
+                    return `
+                        <div class="bg-gray-800 p-6 rounded-lg mb-4 border border-gray-700 shadow-xl">
+                            <p class="text-sm font-bold text-white mb-4 italic">Veto detectado: ${c.problema}</p>
+                            ${conteudoFormatado}
+                        </div>
+                    `;
+                }).join('')}
             </div>
 
             <div class="mt-8">
