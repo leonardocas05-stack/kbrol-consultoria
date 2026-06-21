@@ -73,13 +73,14 @@ const Client = {
     },
 
     async monitorarStatus(hash) {
-        console.log("DEBUG: Iniciando monitoramento para o hash:", hash);
-    
+        console.log("DEBUG: Iniciando novo monitoramento para o hash:", hash);
+        
         // Mata qualquer intervalo que estivesse rodando antes
         if (pollingInterval) clearInterval(pollingInterval);
-        // Define o novo
+        
+        // Define o novo e armazena na variável global
         pollingInterval = setInterval(async () => {
-                try {
+            try {
                 const response = await fetch(`/auditoria/status/${hash}`, { 
                     headers: await Client.getHeaders() 
                 });
@@ -90,17 +91,17 @@ const Client = {
 
                 if (data.status === "concluido") {
                     console.log("DEBUG: Status concluído detectado! Renderizando...");
-                    clearInterval(checar); // Para o ciclo de verificação
-                    UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
                     
-                    // data.laudo contém o resultado final salvo no Supabase
+                    // CORREÇÃO: Usar a variável global que criamos para limpar a si mesma
+                    clearInterval(pollingInterval); 
+                    
+                    UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
                     UI.renderizarResultado(data.laudo); 
                 }
             } catch (e) {
                 console.error("Erro no polling:", e);
             }
         }, 10000); 
-        
     },
 
     // 2. Dashboard e Histórico
