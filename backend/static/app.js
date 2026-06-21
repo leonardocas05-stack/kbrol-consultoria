@@ -253,6 +253,21 @@ const UI = {
                         </div>
                     </div>
                 </div>
+                <div class="mt-8">
+                        <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
+                        <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
+                            ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-center">
+                        <button onclick="Client.baixarPdf('${data.auditoria_id}')" 
+                                class="bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
+                            📥 Baixar Laudo Oficial (PDF)
+                        </button>
+                    </div>
+
+                </div>
             `;
             
             container.classList.remove('hidden');

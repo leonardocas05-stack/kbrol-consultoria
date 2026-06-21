@@ -2,6 +2,7 @@
  * CLIENT.JS - Módulo de Ações do Cliente
  * Responsável por: Auditorias, Dashboard e Perfil do Usuário
  */
+let pollingInterval = null;
 console.log("CLIENT.JS está carregando...");
 const Client = {
     // Helper privado para headers de autenticação
@@ -27,7 +28,12 @@ const Client = {
         
         if (!fileInput?.files[0]) return alert("Selecione um arquivo!");
         
-        UI.exibirStatus('status-processamento', "🔄 Iniciando auditoria...", "#60a5fa");
+        // --- RESET DA UI (Isso resolve a confusão visual) ---
+    const container = document.getElementById('resultado-auditoria');
+    container.innerHTML = ''; // Limpa o conteúdo anterior
+    container.classList.add('hidden'); // Esconde o laudo velho
+    UI.exibirStatus('status-processamento', "🔄 Iniciando nova auditoria...", "#60a5fa");
+
 
         const formData = new FormData();
         formData.append("arquivo", fileInput.files[0]);
@@ -68,9 +74,12 @@ const Client = {
 
     async monitorarStatus(hash) {
         console.log("DEBUG: Iniciando monitoramento para o hash:", hash);
-        // Definimos o intervalo de 10 segundos (10000ms)
-        const checar = setInterval(async () => {
-            try {
+    
+        // Mata qualquer intervalo que estivesse rodando antes
+        if (pollingInterval) clearInterval(pollingInterval);
+        // Define o novo
+        pollingInterval = setInterval(async () => {
+                try {
                 const response = await fetch(`/auditoria/status/${hash}`, { 
                     headers: await Client.getHeaders() 
                 });
@@ -91,6 +100,7 @@ const Client = {
                 console.error("Erro no polling:", e);
             }
         }, 10000); 
+        
     },
 
     // 2. Dashboard e Histórico
@@ -193,7 +203,7 @@ const Client = {
         container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>'; 
     }
     },
-    
+
     // 5. Utilidades
     async baixarPdf(auditoriaId) {
         try {
