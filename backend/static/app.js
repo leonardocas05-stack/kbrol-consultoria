@@ -181,7 +181,8 @@ const UI = {
     renderizarResultado(data) {
         const container = document.getElementById('resultado-auditoria');
         console.log("DEBUG 3 - O que chegou no Front-end:", data);
-            
+        console.log("DEBUG: As chaves que a IA está enviando são:", Object.keys(data.risco_judicializacao));
+        
         // Bloqueio de polling
         if (data.status === 'processando') {
             UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
