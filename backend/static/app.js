@@ -182,7 +182,7 @@ const UI = {
         const container = document.getElementById('resultado-auditoria');
         console.log("DEBUG 3 - O que chegou no Front-end:", data);
         console.log("DEBUG: As chaves que a IA está enviando são:", Object.keys(data.risco_judicializacao));
-        
+
         // Bloqueio de polling
         if (data.status === 'processando') {
             UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
@@ -193,8 +193,12 @@ const UI = {
 
         // Resiliência no Risco
         const risco = data.risco_judicializacao;
-        const nivelRisco = risco?.nivel_risco_litigio || risco?.nivel_risco || risco?.nivel || "Não identificado";
+        let nivelRisco = "Baixo (Conforme)";
 
+        if (risco.conformidade === false && risco.riscos_identificados && risco.riscos_identificados.length > 0) {
+            // Pega o nível de risco do primeiro item da lista de riscos
+            nivelRisco = risco.riscos_identificados[0].nivel_risco_litigio || "Alto";
+        }
         const leiSeca = data.auditoria_lei_seca || [];
         const correcoes = data.correcoes_geradas || [];
 
