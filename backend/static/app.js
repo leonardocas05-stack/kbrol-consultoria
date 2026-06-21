@@ -180,6 +180,7 @@ const UI = {
 
     renderizarResultado(data) {
         const container = document.getElementById('resultado-auditoria');
+        console.log("DEBUG 3 - O que chegou no Front-end:", data);
             
         // Bloqueio de polling
         if (data.status === 'processando') {

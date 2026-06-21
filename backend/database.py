@@ -15,6 +15,7 @@ def salvar_historico(user_id, resultado_final, file_hash, filename):
             "file_hash": file_hash,
             "nome_arquivo": filename 
         }
+        print(f"DEBUG 2 - O que está indo para o Supabase: {dados_insercao['laudo_json']}")
 
         # A instância 'supabase' agora é global dentro deste arquivo
         response = supabase.table("auditorias_contratos").insert(dados_insercao).execute()
