@@ -141,7 +141,7 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
         
         # Não lança HTTPException aqui pois estamos em BackgroundTask
         print(f"Erro processado em background: {str(e)}")
-        
+
 # ==============================================================================
 # ROTAS DA API
 # ==============================================================================
@@ -202,7 +202,11 @@ async def auditoria_arquivo(
             arquivo.filename
         )
         
-        return {"status": "processando", "mensagem": "A auditoria iniciou em segundo plano."}
+        return {
+            "status": "processando", 
+            "file_hash": file_hash, 
+            "mensagem": "A auditoria iniciou em segundo plano."
+        }
         
     except Exception as e:
         traceback.print_exc()
