@@ -180,9 +180,7 @@ const UI = {
 
     renderizarResultado(data) {
         const container = document.getElementById('resultado-auditoria');
-        console.log("DEBUG 3 - O que chegou no Front-end:", data);
-        console.log("DEBUG: As chaves que a IA está enviando são:", Object.keys(data.risco_judicializacao));
-
+            
         // Bloqueio de polling
         if (data.status === 'processando') {
             UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
@@ -194,11 +192,10 @@ const UI = {
         // Resiliência no Risco
         const risco = data.risco_judicializacao;
         let nivelRisco = "Baixo (Conforme)";
-
         if (risco.conformidade === false && risco.riscos_identificados && risco.riscos_identificados.length > 0) {
-            // Pega o nível de risco do primeiro item da lista de riscos
             nivelRisco = risco.riscos_identificados[0].nivel_risco_litigio || "Alto";
         }
+
         const leiSeca = data.auditoria_lei_seca || [];
         const correcoes = data.correcoes_geradas || [];
 
@@ -246,34 +243,25 @@ const UI = {
                     }).join('')}
                  </div>
 
-                    <div class="mt-8">
-                        <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
-                        <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
-                            ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
-                        </div>
-                    </div>
-                </div>
                 <div class="mt-8">
-                        <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
-                        <div class="bg-white text-black p-6 rounded-lg text-sm whitespace-pre-wrap">
-                            ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
-                        </div>
+                    <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
+                    <div class="bg-gray-800 text-gray-200 border border-gray-700 p-6 rounded-lg text-sm whitespace-pre-wrap">
+                        ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
                     </div>
-
-                    <div class="mt-8 flex justify-center">
-                        <button onclick="Client.baixarPdf('${data.auditoria_id}')" 
-                                class="bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
-                            📥 Baixar Laudo Oficial (PDF)
-                        </button>
-                    </div>
-
                 </div>
-            `;
+
+                <div class="mt-8 flex justify-center">
+                    <button onclick="Client.baixarPdf('${data.auditoria_id}')" 
+                            class="bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
+                        📥 Baixar Laudo Oficial (PDF)
+                    </button>
+                </div>
+            </div>
+        `;
             
-            container.classList.remove('hidden');
-            container.scrollIntoView({ behavior: 'smooth' });
+        container.classList.remove('hidden');
+        container.scrollIntoView({ behavior: 'smooth' });
     }
-};
 
 // Ponte com o resto do código
 window.trocarTela = UI.trocarTela;
