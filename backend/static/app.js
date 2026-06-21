@@ -125,18 +125,18 @@ const UI = {
 
     // Verifica se mostra o botão do Admin
     verificarAdminInterface() {
-    const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-    const adminShortcut = document.getElementById('admin-shortcut');
-    
-    console.log("DEBUG: Verificando role...", userData.role); // Isso vai nos dizer o que ele está lendo
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        const adminShortcut = document.getElementById('admin-shortcut');
+        
+        console.log("DEBUG: Verificando role...", userData.role); 
 
-    if (adminShortcut) {
-        if (userData.role === 'admin') {
-            adminShortcut.classList.remove('hidden');
-        } else {
-            adminShortcut.classList.add('hidden');
+        if (adminShortcut) {
+            if (userData.role === 'admin') {
+                adminShortcut.classList.remove('hidden');
+            } else {
+                adminShortcut.classList.add('hidden');
+            }
         }
-    }
     },
 
     // Feedback visual para o usuário
@@ -165,66 +165,66 @@ const UI = {
     },
 
     renderizarResultado(data) {
-            const container = document.getElementById('resultado-auditoria');
+        const container = document.getElementById('resultado-auditoria');
             
-            // Bloqueio de polling
-            if (data.status === 'processando') {
-                UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
-                return;
-            }
+        // Bloqueio de polling
+        if (data.status === 'processando') {
+            UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
+            return;
+        }
 
-            if (!container) return;
+        if (!container) return;
 
-            // Resiliência no Risco
-            const risco = data.risco_judicializacao;
-            const nivelRisco = risco?.nivel_risco_litigio || risco?.nivel_risco || risco?.nivel || "Não identificado";
+        // Resiliência no Risco
+        const risco = data.risco_judicializacao;
+        const nivelRisco = risco?.nivel_risco_litigio || risco?.nivel_risco || risco?.nivel || "Não identificado";
 
-            const leiSeca = data.auditoria_lei_seca || [];
-            const correcoes = data.correcoes_geradas || [];
+        const leiSeca = data.auditoria_lei_seca || [];
+        const correcoes = data.correcoes_geradas || [];
 
-            container.innerHTML = `
-                <div class="laudo-container mt-8">
-                    <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
+        container.innerHTML = `
+            <div class="laudo-container mt-8">
+                <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
                     
-                    <div class="mb-6 p-4 rounded bg-gray-800">
-                        <p class="font-bold text-gray-300">Nível de Risco: ${nivelRisco}</p>
-                    </div>
+                <div class="mb-6 p-4 rounded bg-gray-800">
+                    <p class="font-bold text-gray-300">Nível de Risco: ${nivelRisco}</p>
+                </div>
 
-                    <div class="mb-6">
-                        <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
-                        <ul class="list-disc pl-5 text-gray-400">${leiSeca.map(item => `<li>${item}</li>`).join('')}</ul>
-                    </div>
+                <div class="mb-6">
+                    <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
+                    <ul class="list-disc pl-5 text-gray-400">${leiSeca.map(item => `<li>${item}</li>`).join('')}</ul>
+                </div>
 
-                    <div class="mb-6">
-                        <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
-                        ${correcoes.map(c => {
-                            let conteudoFormatado = "";
-                            try {
-                                const solucaoObj = typeof c.solucao_para_copiar === 'string' 
-                                    ? JSON.parse(c.solucao_para_copiar) 
-                                    : c.solucao_para_copiar;
+                <div class="mb-6">
+                    <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
+                    ${correcoes.map(c => {
+                        let conteudoFormatado = "";
+                        try {
+                            const solucaoObj = typeof c.solucao_para_copiar === 'string' 
+                                ? JSON.parse(c.solucao_para_copiar) 
+                                : c.solucao_para_copiar;
                                 
-                                conteudoFormatado = Object.entries(solucaoObj).map(([key, value]) => {
-                                    const titulo = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
-                                    return `
-                                        <div class="mb-4">
-                                            <p class="font-bold text-red-400 text-xs uppercase mb-1 border-b border-gray-700 inline-block">${titulo}</p>
-                                            <p class="text-gray-300 text-sm leading-relaxed">${value}</p>
-                                        </div>
-                                    `;
-                                }).join('');
-                            } catch (e) {
-                                conteudoFormatado = `<p class="text-white">${c.solucao_para_copiar}</p>`;
-                            }
+                            conteudoFormatado = Object.entries(solucaoObj).map(([key, value]) => {
+                                const titulo = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
+                                return `
+                                    <div class="mb-4">
+                                        <p class="font-bold text-red-400 text-xs uppercase mb-1 border-b border-gray-700 inline-block">${titulo}</p>
+                                        <p class="text-gray-300 text-sm leading-relaxed">${value}</p>
+                                    </div>
+                                `;
+                            }).join('');
+                        } catch (e) {
+                            conteudoFormatado = `<p class="text-white">${c.solucao_para_copiar}</p>`;
+                        }
 
-                            return `
-                                <div class="bg-gray-800 p-6 rounded-lg mb-4 border border-gray-700 shadow-xl">
-                                    <p class="text-sm font-bold text-white mb-4 italic">${c.problema}</p>
-                                    ${conteudoFormatado}
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
+                        return `
+                            <div class="bg-gray-800 p-6 rounded-lg mb-4 border border-gray-700 shadow-xl">
+                                <p class="text-sm font-bold text-white mb-4 italic">${c.problema}</p>
+                                ${conteudoFormatado}
+                            </div>
+                        `;
+                    }).join('')}
+                 </div>
 
                     <div class="mt-8">
                         <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>

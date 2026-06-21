@@ -89,52 +89,42 @@ const Client = {
                 }
             } catch (e) {
                 console.error("Erro no polling:", e);
-                // Opcional: Se der erro muitas vezes, parar o interval para não inundar o servidor
             }
         }, 10000); 
     },
 
-
     // 2. Dashboard e Histórico
     async carregarDashboard() {
-    const container = document.getElementById('lista-auditorias');
-    if (!container) {
-        console.error("ERRO: Container não encontrado!");
-        return;
-    }
-    
-    // DEBUG: Verifique se o esqueleto está aqui
-    console.log("Conteúdo atual do container antes do fetch:", container.innerHTML);
-    
-    try {
-        const response = await fetch('/auditorias/listar', { headers: await Client.getHeaders() });
-        const data = await response.json();
-        
-        console.log("Dados recebidos:", data); // Verifique se auditorias não está vazio
-        
-        if (!data.auditorias || data.auditorias.length === 0) {
-            container.innerHTML = '<p class="text-gray-500 text-center">Nenhuma auditoria encontrada.</p>';
+        const container = document.getElementById('lista-auditorias');
+        if (!container) {
+            console.error("ERRO: Container não encontrado!");
             return;
         }
+        
+        try {
+            const response = await fetch('/auditorias/listar', { headers: await Client.getHeaders() });
+            const data = await response.json();
+            
+            if (!data.auditorias || data.auditorias.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center">Nenhuma auditoria encontrada.</p>';
+                return;
+            }
 
-        // DEBUG: O que vamos injetar
-        const html = data.auditorias.map(aud => `
-            <div class="p-6 rounded-2xl bg-gray-900 border border-gray-800 flex justify-between items-center mb-4">
-                <div>
-                    <h3 class="font-bold text-white">${aud.nome_arquivo || "Minuta"}</h3>
-                    <p class="text-sm text-gray-400">Data: ${new Date(aud.created_at).toLocaleDateString()}</p>
-                </div>
-                <button onclick="Client.baixarPdf('${aud.id}')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-[#991b1b]">📥 PDF</button>
-            </div>`).join('');
-            
-        console.log("Injetando HTML no DOM...");
-        container.innerHTML = html;
-        console.log("Substituição concluída.");
-            
-    } catch (e) { 
-        console.error("Erro no processamento:", e);
-        container.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar histórico.</p>'; 
-    }
+            const html = data.auditorias.map(aud => `
+                <div class="p-6 rounded-2xl bg-gray-900 border border-gray-800 flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-bold text-white">${aud.nome_arquivo || "Minuta"}</h3>
+                        <p class="text-sm text-gray-400">Data: ${new Date(aud.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <button onclick="Client.baixarPdf('${aud.id}')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-[#991b1b]">📥 PDF</button>
+                </div>`).join('');
+                
+            container.innerHTML = html;
+                
+        } catch (e) { 
+            console.error("Erro no processamento:", e);
+            container.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar histórico.</p>'; 
+        }
     },
 
     // 3. Gestão de Perfil
@@ -173,7 +163,6 @@ const Client = {
 
             if (response.ok) {
                 alert("Ticket enviado com sucesso!");
-                // Fechar modal globalmente
                 document.getElementById('modal-suporte').classList.add('hidden');
             }
         } catch (e) { alert("Erro ao enviar ticket."); }
@@ -214,19 +203,15 @@ const Client = {
     }
 };
 
-// --- EVENTO DE CLIQUE (Substitui o onclick do HTML) ---
+// --- EVENTO DE CLIQUE ---
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btn-auditar-trigger');
     if (btn) {
         btn.addEventListener('click', Client.processarAuditoria);
-        console.log("Evento de auditoria acoplado com sucesso!");
-    } else {
-        console.error("Botão de auditoria não encontrado na tela!");
     }
 });
 
-
-// Ponte para HTML (Mantendo compatibilidade com onclick="...")
+// Ponte para HTML
 window.Client = Client;
 window.processarAuditoria = Client.processarAuditoria;
 window.carregarDashboard = Client.carregarDashboard;
@@ -239,5 +224,4 @@ window.enviarTicket = () => {
     );
 };
 
-// 2. LOG DE SEGURANÇA (Para saber se o arquivo carregou)
-console.log("CLIENT.JS carregado com sucesso. Ponte criada para processarAuditoria.");
+console.log("CLIENT.JS carregado com sucesso.");
