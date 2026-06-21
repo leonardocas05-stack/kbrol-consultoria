@@ -111,6 +111,7 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
         try:
             # Agora 'laudo_texto' (ou 'laudo_texto_limpo') está definido e pode ser lido
             laudo_jurisprudencial = json.loads(laudo_texto_limpo)
+            print(f"DEBUG: Estrutura da IA: {laudo_jurisprudencial.keys()}")
         except Exception as e:
             print(f"ERRO AO PROCESSAR JSON DA IA: {e}")
             # Fallback seguro caso a IA falhe
