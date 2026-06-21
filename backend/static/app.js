@@ -167,8 +167,6 @@ const UI = {
     renderizarResultado(data) {
             const container = document.getElementById('resultado-auditoria');
             
-            console.log("DEBUG FRONTEND: Objeto recebido pela função de render:", data.risco_judicializacao);
-
             // Bloqueio de polling
             if (data.status === 'processando') {
                 UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
@@ -178,7 +176,7 @@ const UI = {
             if (!container) return;
 
             // Resiliência no Risco
-            const nivelRisco = risco?.nivel_risco_litigio || risco?.nivel_risco || "Não identificado";
+            const risco = data.risco_judicializacao;
             const nivelRisco = risco?.nivel_risco_litigio || risco?.nivel_risco || risco?.nivel || "Não identificado";
 
             const leiSeca = data.auditoria_lei_seca || [];
