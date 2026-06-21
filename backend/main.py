@@ -241,11 +241,13 @@ async def baixar_pdf(auditoria_id: str, user = Depends(validar_token)):
 
 @app.get("/auditoria/status/{file_hash}", dependencies=[Depends(validar_token)])
 async def verificar_status_auditoria(file_hash: str, user = Depends(validar_token)):
+    print(f"DEBUG: Consultando status para o hash: {file_hash}")
     # Verifica no banco se o registro já existe para este hash
     resposta = supabase.table("auditorias_contratos")\
                        .select("laudo_json")\
                        .eq("file_hash", file_hash)\
                        .execute()
+    print(f"DEBUG: Resposta do Supabase para hash {file_hash}: {resposta.data}")
     
     if resposta.data and len(resposta.data) > 0:
         return {"status": "concluido", "laudo": json.loads(resposta.data[0]["laudo_json"])}
