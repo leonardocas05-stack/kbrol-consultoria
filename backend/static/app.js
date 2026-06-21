@@ -262,6 +262,7 @@ const UI = {
         container.classList.remove('hidden');
         container.scrollIntoView({ behavior: 'smooth' });
     }
+};
 
 // Ponte com o resto do código
 window.trocarTela = UI.trocarTela;
