@@ -146,16 +146,17 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
         return resultado_final
 
     except Exception as e:
-        traceback.print_exc()
-        # Só tenta salvar no banco se o ID tiver sido criado com sucesso
+        # Pega o erro completo com detalhes da linha para sabermos ONDE crashou
+        err_msg = traceback.format_exc()
+        print("!!! ERRO CRÍTICO NO BACKGROUND TASK !!!")
+        print(err_msg)
+        
+        # Tenta salvar o erro no banco, se possível
         if auditoria_id:
             try:
                 supabase.table("auditorias_contratos").update({"laudo_json": json.dumps({"erro": str(e)})}).eq("id", auditoria_id).execute()
-            except:
-                pass 
-        
-        # Não lança HTTPException aqui pois estamos em BackgroundTask
-        print(f"Erro processado em background: {str(e)}")
+            except Exception as e2:
+                print(f"Erro ao tentar salvar o erro no banco: {e2}")
 
 # ==============================================================================
 # ROTAS DA API
