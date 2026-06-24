@@ -1,12 +1,13 @@
-import os
-from typing import Dict, Any, Optional
-from uuid import UUID
-from config import supabase
+from typing import Dict, Any
+# Nota: Removidos imports os, UUID e Client (supabase-js) que não estavam sendo usados diretamente neste arquivo.
+
+# 🔍 A CORREÇÃO: Reutiliza o cliente Supabase Singleton já configurado no seu config.py.
+# Isso evita o erro 'supabase_key is required' na Render, pois o config.py já gerencia isso.
+from config import supabase 
 from backend.services.notifications import enviar_email_homologacao
 
-# Inicialização do cliente Supabase utilizando variáveis de ambiente
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+# APAGADO: O bloco de inicialização duplicado que lia variáveis de ambiente e
+# causava a exceção no servidor de hospedagem foi removido, simplificando o código.
 
 
 def iniciar_transicao_instantanea(
@@ -27,6 +28,7 @@ def iniciar_transicao_instantanea(
         "status": "rascunho_gerado" # Gatilho para o Front-end aplicar a marca d'água
     }
     
+    # Executa a inserção utilizando o cliente Singleton
     response = supabase.table("auditorias_contratos").insert(payload).execute()
     return response.data[0] if response.data else {}
 
@@ -66,7 +68,7 @@ def homologar_estatuto_definitivo(
         "url_estatuto_validado": url_estatuto_validado
     }
     
-    # Executa a atualização no Supabase
+    # Executa a atualização no Supabase utilizando o cliente Singleton
     response = supabase.table("auditorias_contratos") \
         .update(payload) \
         .eq("id", auditoria_id) \
@@ -84,7 +86,7 @@ def homologar_estatuto_definitivo(
             email_cliente = perfil_res.data[0]["email_contato"]
             empresa_cliente = perfil_res.data[0]["nome_empresa"]
             
-            # Dispara o e-mail assíncrono (Arquivo 2)
+            # Dispara o e-mail assíncrono (Isolado no arquivo notifications.py)
             enviar_email_homologacao(email_cliente, empresa_cliente)
             
         return dados_auditoria
