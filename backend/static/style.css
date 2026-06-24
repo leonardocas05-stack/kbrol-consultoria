@@ -64,3 +64,5 @@ body {
     max-width: 800px;
     margin: 0 auto;
 }
+
+#aba-homologacao { display: none; }

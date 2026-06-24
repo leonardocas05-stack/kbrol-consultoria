@@ -8,12 +8,13 @@ import traceback
 import uvicorn
 import os
 
-from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, Response, status, BackgroundTasks
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, HTTPException, Request, UploadFile, File, Depends, Response, status, BackgroundTasks, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 from fpdf import FPDF
 from pydantic import BaseModel
+from services.transition_manager import homologar_estatuto_definitivo, avancar_etapa_linha_tempo
 
 # Configurações e Serviços Locais
 from config import supabase
@@ -24,6 +25,7 @@ from ticket_service import router as tickets_router
 from modelos import ContratoSocietario
 from motor import MotorAuditoriaSA
 from jurisprudencia import OraculoJurisprudencial
+
 
 # Inteligências Artificiais (Herança BaseIA já integrada nas classes)
 from ia_auditora import IAAuditoraJurisprudencial
@@ -142,6 +144,8 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
         # 6. Persistência
         auditoria_id = salvar_historico(user_id, resultado_final, file_hash, filename)
         resultado_final["auditoria_id"] = auditoria_id
+
+        supabase.table("auditorias_contratos").update({"status": "rascunho_gerado"}).eq("id", auditoria_id).execute()
             
         return resultado_final
 
@@ -255,20 +259,72 @@ async def baixar_pdf(auditoria_id: str, user = Depends(validar_token)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Erro ao gerar PDF: {str(e)}")
 
+# 1. ROTA DE STATUS ATUALIZADA (Lê dinamicamente a linha do tempo e o parecer)
 @app.get("/auditoria/status/{file_hash}", dependencies=[Depends(validar_token)])
 async def verificar_status_auditoria(file_hash: str, user = Depends(validar_token)):
-    print(f"DEBUG: Consultando status para o hash: {file_hash}")
-    # Verifica no banco se o registro já existe para este hash
+    print(f"DEBUG: Consultando status real para o hash: {file_hash}")
+    
+    # Seleciona as colunas estruturais que adicionamos na migration do Supabase
     resposta = supabase.table("auditorias_contratos")\
-                       .select("laudo_json")\
+                       .select("status, laudo_json, parecer_admin, url_estatuto_validado")\
                        .eq("file_hash", file_hash)\
                        .execute()
-    print(f"DEBUG: Resposta do Supabase para hash {file_hash}: {resposta.data}")
     
     if resposta.data and len(resposta.data) > 0:
-        return {"status": "concluido", "laudo": json.loads(resposta.data[0]["laudo_json"])}
+        row = resposta.data[0]
+        laudo_dict = json.loads(row["laudo_json"]) if isinstance(row["laudo_json"], str) else row["laudo_json"]
+        
+        # Monta o payload exatamente como o seu client.js e app.js esperam ler
+        return {
+            "status": row["status"], # 'rascunho_gerado', 'em_revisao_contabil', etc.
+            "contrato_reescrito": laudo_dict.get("contrato_reescrito") if laudo_dict else None,
+            "parecer_admin": row["parecer_admin"],
+            "url_estatuto_validado": row["url_estatuto_validado"]
+        }
     
     return {"status": "processando"}
+
+
+# 2. NOVA ROTA: RECEBE O DESPACHO DO ADVOGADO (ADMIN)
+@app.post("/admin/homologar")
+async def admin_homologar(
+    auditoria_id: str = Form(...),
+    novo_status: str = Form(...),
+    parecer_admin: str = Form(""),
+    arquivo_validado: UploadFile = File(None),
+    current_user = Depends(get_admin_user) # Trava de segurança: só administradores entram aqui
+):
+    try:
+        url_publica_documento = None
+
+        # Se o advogado anexou um arquivo revisado (PDF/Docx), faz o upload para o Storage do Supabase
+        if arquivo_validado:
+            blob_arquivo = await arquivo_validado.read()
+            caminho_storage = f"estatutos_validados/{auditoria_id}_{arquivo_validado.filename}"
+            
+            # Salva o arquivo dentro do bucket 'estatutos' no Supabase Storage
+            supabase.storage.from_("estatutos").upload(caminho_storage, blob_arquivo)
+            url_publica_documento = supabase.storage.from_("estatutos").get_public_url(caminho_storage)
+
+        # Se a intenção for finalizar o processo, consolida o parecer e dispara a notificação
+        if novo_status == "validado_oficial":
+            resultado = homologar_estatuto_definitivo(
+                auditoria_id=auditoria_id,
+                advogado_id=current_user.id,
+                parecer_admin=parecer_admin,
+                url_estatuto_validado=url_publica_documento or ""
+            )
+        else:
+            # Caso contrário, apenas avança a fase na linha do tempo (Contábil ou Bancos)
+            resultado = avancar_etapa_linha_tempo(auditoria_id, novo_status)
+            # Atualiza o parecer parcial se houver
+            if parecer_admin:
+                supabase.table("auditorias_contratos").update({"parecer_admin": parecer_admin}).eq("id", auditoria_id).execute()
+
+        return {"status": "success", "dados": resultado}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erro ao processar homologação: {str(e)}")
     
 # ==============================================================================
 # ROTAS DO ADMINISTRADOR

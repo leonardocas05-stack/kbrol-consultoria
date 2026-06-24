@@ -22,18 +22,16 @@ const Client = {
         }
     },
 
-    // 1. Processamento de Auditoria
+    // 1. Processamento de Auditoria (ATUALIZADO PARA O EFEITO UAU)
     async processarAuditoria() {
         const fileInput = document.getElementById('file-input');
         
         if (!fileInput?.files[0]) return alert("Selecione um arquivo!");
         
-        // --- RESET DA UI (Isso resolve a confusão visual) ---
-    const container = document.getElementById('resultado-auditoria');
-    container.innerHTML = ''; // Limpa o conteúdo anterior
-    container.classList.add('hidden'); // Esconde o laudo velho
-    UI.exibirStatus('status-processamento', "🔄 Iniciando nova auditoria...", "#60a5fa");
-
+        // RESET DA UI: Limpa estados antigos para preparar a nova animação
+        const container = document.getElementById('resultado-auditoria');
+        if (container) container.classList.add('hidden'); 
+        UI.exibirStatus('status-processamento', "🔄 Iniciando engenharia societária...", "#60a5fa");
 
         const formData = new FormData();
         formData.append("arquivo", fileInput.files[0]);
@@ -56,52 +54,61 @@ const Client = {
 
             const data = await response.json();
 
-            // Verifica o status retornado pelo backend
-            if (data.status === "processando") {
-                UI.exibirStatus('status-processamento', "⏳ IA analisando seu contrato...", "#fbbf24");
-                // Inicia o monitoramento usando o hash retornado pelo servidor
+            // =================================================================
+            // APLICAÇÃO DO EFEITO UAU: Renderiza o rascunho da IA imediatamente
+            // =================================================================
+            UI.renderizarResultado(data);
+
+            // Se o documento ainda não foi validado pelo advogado, ativa o monitoramento da linha do tempo
+            if (data.status !== "validado_oficial") {
+                UI.exibirStatus('status-processamento', "⏳ Rascunho da IA gerado! Acompanhe a revisão jurídica na linha do tempo abaixo.", "#fbbf24");
+                
+                // Dispara o monitoramento contínuo usando o hash do arquivo
                 Client.monitorarStatus(data.file_hash);
             } else {
-                // Caso de cache (já processado) ou sucesso imediato
-                UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
-                UI.renderizarResultado(data);
+                UI.exibirStatus('status-processamento', "✅ Reorganização societária homologada!", "#4ade80");
             }
+            
         } catch (e) {
             console.error("Erro no processamento:", e);
             UI.exibirStatus('status-processamento', "❌ Erro: " + e.message, "#f87171");
         }
     },
 
+    // MONITORAMENTO EM TEMPO REAL DA LINHA DO TEMPO
     async monitorarStatus(hash) {
-        console.log("DEBUG: Iniciando novo monitoramento para o hash:", hash);
+        console.log("DEBUG: Iniciando rastreamento de fases para o hash:", hash);
         
-        // Mata qualquer intervalo que estivesse rodando antes
+        // Limpa proteções de intervalos duplicados
         if (pollingInterval) clearInterval(pollingInterval);
         
-        // Define o novo e armazena na variável global
+        // Reduzi o tempo para 5 segundos (5000ms) para a apresentação ficar mais ágil e responsiva
         pollingInterval = setInterval(async () => {
             try {
                 const response = await fetch(`/auditoria/status/${hash}`, { 
                     headers: await Client.getHeaders() 
                 });
                 
-                if (!response.ok) throw new Error("Falha ao buscar status");
+                if (!response.ok) throw new Error("Falha ao atualizar status da transição");
                 
                 const data = await response.json();
 
-                if (data.status === "concluido") {
-                    console.log("DEBUG: Status concluído detectado! Renderizando...");
-                    
-                    // CORREÇÃO: Usar a variável global que criamos para limpar a si mesma
+                // Extrai os dados se eles vierem encapsulados no objeto laudo
+                const dadosMapeados = data.laudo ? data.laudo : data;
+                if (!dadosMapeados.status) dadosMapeados.status = data.status;
+
+                // Força o app.js a atualizar as cores da linha do tempo e remover a marca d'água se necessário
+                UI.renderizarResultado(dadosMapeados); 
+
+                // Condição de parada: O advogado deu o aval definitivo e o e-mail foi disparado
+                if (dadosMapeados.status === "validado_oficial") {
                     clearInterval(pollingInterval); 
-                    
-                    UI.exibirStatus('status-processamento', "✅ Auditoria concluída!", "#4ade80");
-                    UI.renderizarResultado(data.laudo); 
+                    UI.exibirStatus('status-processamento', "🎉 Processo concluído! Seu Estatuto Social Oficial foi liberado pelo advogado.", "#4ade80");
                 }
             } catch (e) {
-                console.error("Erro no polling:", e);
+                console.error("Erro no fluxo de atualização da linha do tempo:", e);
             }
-        }, 10000); 
+        }, 5000); 
     },
 
     // 2. Dashboard e Histórico
@@ -180,29 +187,29 @@ const Client = {
     },
 
     async carregarMeusTickets() {
-    const container = document.getElementById('container-tickets-usuario');
-    if (!container) return;
-    
-    try {
-        const response = await fetch('/tickets/me', { headers: await Client.getHeaders() });
-        const data = await response.json();
+        const container = document.getElementById('container-tickets-usuario');
+        if (!container) return;
         
-        console.log("DEBUG TICKETS: Resposta do servidor:", data); // Isso é vital
-        
-        if (data.tickets && data.tickets.length > 0) {
-            container.innerHTML = data.tickets.map(t => `
-                <div class="p-3 bg-gray-800 rounded border border-gray-700">
-                    <p class="font-bold text-white">${t.assunto}</p>
-                    <p class="text-sm text-gray-400">${t.texto}</p>
-                </div>
-            `).join('');
-        } else {
-            container.innerHTML = '<p class="text-gray-500">Nenhum ticket encontrado.</p>';
+        try {
+            const response = await fetch('/tickets/me', { headers: await Client.getHeaders() });
+            const data = await response.json();
+            
+            console.log("DEBUG TICKETS: Resposta do servidor:", data); 
+            
+            if (data.tickets && data.tickets.length > 0) {
+                container.innerHTML = data.tickets.map(t => `
+                    <div class="p-3 bg-gray-800 rounded border border-gray-700">
+                        <p class="font-bold text-white">${t.assunto}</p>
+                        <p class="text-sm text-gray-400">${t.texto}</p>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<p class="text-gray-500">Nenhum ticket encontrado.</p>';
+            }
+        } catch (e) { 
+            console.error("DEBUG TICKETS: Erro crítico:", e); 
+            container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>'; 
         }
-    } catch (e) { 
-        console.error("DEBUG TICKETS: Erro crítico:", e); // Veja o erro aqui
-        container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>'; 
-    }
     },
 
     // 5. Utilidades
@@ -223,15 +230,12 @@ const Client = {
     }
 };
 
-// --- EVENTO DE CLIQUE ---
+// EVENTO DE CLIQUE DA DOM
 document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btn-auditar-trigger');
-    if (btn) {
-        btn.addEventListener('click', Client.processarAuditoria);
-    }
+    Client.init(); // Ativa a inicialização segura do escopo
 });
 
-// Ponte para HTML
+// Pontes de escopo global para herança no HTML
 window.Client = Client;
 window.processarAuditoria = Client.processarAuditoria;
 window.carregarDashboard = Client.carregarDashboard;

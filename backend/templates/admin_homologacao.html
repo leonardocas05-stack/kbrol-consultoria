@@ -1,0 +1,76 @@
+<div id="aba-homologacao" class="container-painel">
+    
+    <h2><i class="icone-balanca"></i> Fila de Homologação de Estatutos</h2>
+    <p class="subtitulo">Gerencie os rascunhos da IA e controle as fases da linha do tempo dos clientes.</p>
+
+    <div class="layout-duas-colunas">
+        
+        <div class="card-painel coluna-lista">
+            <h3>Contratos Aguardando Revisão</h3>
+            <table class="tabela-homologacao">
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>Arquivo Original</th>
+                        <th>Status Atual</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="linha-pendente">
+                        <td><strong>Campo Nobre Ltda.</strong></td>
+                        <td><span class="badge-arquivo">contrato_social_v1.pdf</span></td>
+                        <td><span class="status-tag rascunho">Rascunho da IA</span></td>
+                        <td>
+                            <button class="btn-selecionar" onclick="carregarContratoNoFormularo('id-da-auditoria')">
+                                Revisar Peça
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-painel coluna-formulario" id="painel-despacho">
+            <h3>Despacho Técnico do Advogado</h3>
+            
+            <form action="/admin/homologar" method="POST" enctype="multipart/form-data">
+                
+                <input type="hidden" name="auditoria_id" id="form-auditoria-id" value="id-da-auditoria">
+
+                <div class="campo-grupo">
+                    <label>1. Baixar Rascunho Gerado pela IA:</label>
+                    <a href="#" id="link-download-ia" class="btn-download" download>
+                        <i class="icone-download"></i> Download Minuta_IA_S.A.docx
+                    </a>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="novo_status">2. Atualizar Fase da Linha do Tempo (Mundo Real):</label>
+                    <select name="novo_status" id="novo_status" class="input-padrao">
+                        <option value="rascunho_gerado">Fase 1: Rascunho da IA Entregue</option>
+                        <option value="em_revisao_contabil">Fase 2: Movido para Auditoria Contábil</option>
+                        <option value="em_revisao_bancaria">Fase 3: Movido para Covenants Bancários</option>
+                        <option value="validado_oficial">Fase 4: Finalizado (Homologar e Liberar Estatuto)</option>
+                    </select>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="arquivo_validado">3. Upload do Estatuto Social Definitivo (Sem Marca d'Água):</label>
+                    <input type="file" id="arquivo_validado" name="arquivo_validado" class="input-file" accept=".pdf,.docx">
+                    <p class="ajuda-texto">Este arquivo substituirá o rascunho provisório na tela do cliente.</p>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="parecer_admin">4. Parecer e Notas de Correção Jurídica:</label>
+                    <textarea id="parecer_admin" name="parecer_admin" rows="5" class="input-text-area" placeholder="Digite aqui as alterações feitas na minuta ou observações para o cliente..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-sucesso-global">
+                    Salvar Alterações e Notificar Cliente por E-mail
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>

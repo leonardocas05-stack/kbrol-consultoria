@@ -180,85 +180,107 @@ const UI = {
 
     renderizarResultado(data) {
         const container = document.getElementById('resultado-auditoria');
+        const statusProcessamento = document.getElementById('status-processamento');
             
-        // Bloqueio de polling
+        // 1. Bloqueio de Polling (Enquanto o backend processa o arquivo na IA)
         if (data.status === 'processando') {
-            UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando..."), "#fbbf24");
+            UI.exibirStatus('status-processamento', "⏳ " + (data.mensagem || "Processando e gerando rascunho societário..."), "#fbbf24");
             return;
         }
 
         if (!container) return;
+        if (statusProcessamento) statusProcessamento.classList.add('hidden'); // Esconde o carregando
 
-        // Resiliência no Risco
-        const risco = data.risco_judicializacao;
-        let nivelRisco = "Baixo (Conforme)";
-        if (risco.conformidade === false && risco.riscos_identificados && risco.riscos_identificados.length > 0) {
-            nivelRisco = risco.riscos_identificados[0].nivel_risco_litigio || "Alto";
+        // 2. INJEÇÃO DO TEXTO DO ESTATUTO NO VISUALIZADOR
+        const corpoTextoMinuta = document.getElementById('corpo-texto-minuta');
+        if (corpoTextoMinuta && data.contrato_reescrito) {
+            corpoTextoMinuta.innerHTML = `
+                <p class="font-bold text-white text-center mb-6">ESTATUTO SOCIAL DA SOCIEDADE CAMPO NOBRE S.A.</p>
+                <div class="whitespace-pre-wrap leading-relaxed">${data.contrato_reescrito}</div>
+            `;
         }
 
-        const leiSeca = data.auditoria_lei_seca || [];
-        const correcoes = data.correcoes_geradas || [];
+        // 3. ENGENHARIA DA LINHA DO TEMPO (DYNAMIC TIMELINE)
+        // Resgata os elementos de cada fase no HTML
+        const p1 = document.getElementById('passo-linha-1');
+        const p2 = document.getElementById('passo-linha-2');
+        const p3 = document.getElementById('passo-linha-3');
+        const p4 = document.getElementById('passo-linha-4');
 
-        container.innerHTML = `
-            <div class="laudo-container mt-8">
-                <h2 class="text-3xl font-black text-white mb-6">Resultado da Auditoria</h2>
-                    
-                <div class="mb-6 p-4 rounded bg-gray-800">
-                    <p class="font-bold text-gray-300">Nível de Risco: ${nivelRisco}</p>
-                </div>
+        const b1 = document.getElementById('badge-passo-1');
+        const b2 = document.getElementById('badge-passo-2');
+        const b3 = document.getElementById('badge-passo-3');
+        const b4 = document.getElementById('badge-passo-4');
 
-                <div class="mb-6">
-                    <h3 class="font-bold text-white mb-2">Parecer Legal:</h3>
-                    <ul class="list-disc pl-5 text-gray-400">${leiSeca.map(item => `<li>${item}</li>`).join('')}</ul>
-                </div>
+        // Reseta as classes de todas as fases para o padrão cinza inativo antes de pintar a fase atual
+        [p2, p3, p4].forEach(p => p?.classList.add('opacity-50', 'border-gray-800', 'bg-gray-950/40'));
+        [p2, p3, p4].forEach(p => p?.classList.remove('border-emerald-800', 'bg-emerald-950/20'));
+        [b2, b3, b4].forEach(b => b?.classList.replace('bg-emerald-400', 'bg-gray-700'));
+        [b1, b2, b3, b4].forEach(b => b?.classList.remove('animate-pulse'));
 
-                <div class="mb-6">
-                    <h3 class="font-bold text-white mb-2">Correções Sugeridas:</h3>
-                    ${correcoes.map(c => {
-                        let conteudoFormatado = "";
-                        try {
-                            const solucaoObj = typeof c.solucao_para_copiar === 'string' 
-                                ? JSON.parse(c.solucao_para_copiar) 
-                                : c.solucao_para_copiar;
-                                
-                            conteudoFormatado = Object.entries(solucaoObj).map(([key, value]) => {
-                                const titulo = key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ');
-                                return `
-                                    <div class="mb-4">
-                                        <p class="font-bold text-red-400 text-xs uppercase mb-1 border-b border-gray-700 inline-block">${titulo}</p>
-                                        <p class="text-gray-300 text-sm leading-relaxed">${value}</p>
-                                    </div>
-                                `;
-                            }).join('');
-                        } catch (e) {
-                            conteudoFormatado = `<p class="text-white">${c.solucao_para_copiar}</p>`;
-                        }
-
-                        return `
-                            <div class="bg-gray-800 p-6 rounded-lg mb-4 border border-gray-700 shadow-xl">
-                                <p class="text-sm font-bold text-white mb-4 italic">${c.problema}</p>
-                                ${conteudoFormatado}
-                            </div>
-                        `;
-                    }).join('')}
-                 </div>
-
-                <div class="mt-8">
-                    <h3 class="font-bold text-white mb-2">Contrato Reescrito:</h3>
-                    <div class="bg-gray-800 text-gray-200 border border-gray-700 p-6 rounded-lg text-sm whitespace-pre-wrap">
-                        ${data.contrato_reescrito || 'Nenhum contrato reescrito gerado.'}
-                    </div>
-                </div>
-
-                <div class="mt-8 flex justify-center">
-                    <button onclick="Client.baixarPdf('${data.auditoria_id}')" 
-                            class="bg-[#991b1b] hover:bg-[#7f1d1d] text-white font-bold py-4 px-8 rounded-lg shadow-lg transition-all transform hover:-translate-y-1">
-                        📥 Baixar Laudo Oficial (PDF)
-                    </button>
-                </div>
-            </div>
-        `;
+        // Aplica a estilização com base no status de evolução da transição
+        if (data.status === 'rascunho_gerado' || !data.status) {
+            b1?.classList.add('animate-pulse');
+        } 
+        else if (data.status === 'em_revisao_contabil') {
+            p2?.classList.remove('opacity-50', 'border-gray-800', 'bg-gray-950/40');
+            p2?.classList.add('border-emerald-800', 'bg-emerald-950/20');
+            b2?.classList.replace('bg-gray-700', 'bg-emerald-400');
+            b2?.classList.add('animate-pulse');
+        } 
+        else if (data.status === 'em_revisao_bancaria') {
+            // Ativa o Passo 2 e o Passo 3
+            [p2, p3].forEach(p => p?.classList.remove('opacity-50', 'border-gray-800', 'bg-gray-950/40'));
+            [p2, p3].forEach(p => p?.classList.add('border-emerald-800', 'bg-emerald-950/20'));
+            [b2, b3].forEach(b => b?.classList.replace('bg-gray-700', 'bg-emerald-400'));
+            b3?.classList.add('animate-pulse');
+        } 
+        else if (data.status === 'validado_oficial') {
+            // Ativa todas as fases como concluídas
+            [p2, p3, p4].forEach(p => p?.classList.remove('opacity-50', 'border-gray-800', 'bg-gray-950/40'));
+            [p2, p3, p4].forEach(p => p?.classList.add('border-emerald-800', 'bg-emerald-950/20'));
+            [b2, b3, b4].forEach(b => b?.classList.replace('bg-gray-700', 'bg-emerald-400'));
             
+            // =================================================================
+            // 4. DESBLOQUEIO DE SEGURANÇA JURÍDICA (REMOÇÃO DA MARCA D'ÁGUA)
+            // =================================================================
+            
+            // A. Remove a marca d'água vermelha rotacionada
+            document.getElementById('marca-dagua-ia')?.classList.add('hidden');
+            
+            // B. Desfaz o efeito de desfoque (blur) e restrição de cópia do texto
+            if (corpoTextoMinuta) {
+                corpoTextoMinuta.classList.remove('blur-[1px]', 'select-none', 'text-gray-400');
+                corpoTextoMinuta.classList.add('text-gray-200');
+            }
+
+            // C. Atualiza a Tag de Status do topo do documento para Verde
+            const statusTag = document.getElementById('tag-status-documento');
+            if (statusTag) {
+                statusTag.className = "bg-emerald-950/50 text-emerald-400 border border-emerald-900 px-3 py-1 rounded-full text-xs font-bold";
+                statusTag.textContent = "Versão Oficial Validada";
+            }
+
+            // D. Transforma o botão de download travado em um link funcional e chamativo
+            const btnDownload = document.getElementById('btn-download-cliente');
+            if (btnDownload) {
+                btnDownload.href = data.url_estatuto_validado || '#';
+                btnDownload.className = "bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold text-sm inline-flex items-center gap-2 transition-all transform hover:-translate-y-0.5 shadow-lg shadow-emerald-950/30";
+                btnDownload.innerHTML = "📥 Baixar Estatuto Social Homologado (PDF)";
+                btnDownload.onclick = null; // Elimina o travamento de clique do HTML
+            }
+
+            // E. Altera o painel lateral para exibir as notas deixadas pelo advogado
+            document.getElementById('box-parecer-vazio')?.classList.add('hidden');
+            document.getElementById('box-parecer-preenchido')?.classList.remove('hidden');
+            
+            const textoParecer = document.getElementById('texto-parecer-cliente');
+            if (textoParecer) {
+                textoParecer.textContent = data.parecer_admin || "Documento revisado e considerado em plena conformidade com a Lei 6.404/76 e diretrizes institucionais, sem ressalvas.";
+            }
+        }
+
+        // Revela o container inteiro e rola a tela suavemente para o resultado
         container.classList.remove('hidden');
         container.scrollIntoView({ behavior: 'smooth' });
     }

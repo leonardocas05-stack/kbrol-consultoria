@@ -15,6 +15,9 @@
             
             <nav class="space-y-2 flex-grow">
                 <button onclick="carregarAdminAuditorias()" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 transition font-bold text-gray-300">Auditorias</button>
+                
+                <button onclick="carregarAdminHomologacao()" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 transition font-bold text-gray-300">Homologação de Estatutos</button>
+                
                 <button onclick="carregarAdminTickets()" class="w-full text-left p-3 rounded-lg hover:bg-gray-800 transition font-bold text-gray-300">Tickets de Suporte</button>
             </nav>
 
@@ -43,5 +46,35 @@
         </div>
     </div>
 
-    <script src="/static/app.js"></script>   <script src="/static/admin.js"></script> </body>
-</html>
+    <div id="modal-homologar-estatuto" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+        <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl w-full max-w-lg shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 class="text-xl font-bold mb-4 tracking-tight text-white">Despacho e Homologação (S.A.)</h2>
+            
+            <form id="form-homologacao" onsubmit="salvarHomologacao(event)">
+                <input type="hidden" id="homologar-auditoria-id">
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">1. Baixar Rascunho Inicial da IA:</label>
+                    <a id="link-download-rascunho" href="#" download class="inline-flex items-center gap-2 bg-gray-800 border border-gray-700 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-200 hover:bg-gray-700 transition w-full justify-center">
+                        📥 Download Minuta Provisória
+                    </a>
+                </div>
+
+                <div class="mb-4">
+                    <label for="status-transicao" class="block text-sm text-gray-400 mb-2">2. Avançar Fase da Linha do Tempo:</label>
+                    <select id="status-transicao" class="w-full bg-gray-800 text-white border border-gray-700 p-3 rounded-xl focus:outline-none focus:border-[#991b1b] transition">
+                        <option value="rascunho_gerado">Fase 1: Rascunho da IA Liberado</option>
+                        <option value="em_revisao_contabil">Fase 2: Auditoria Contábil Externa</option>
+                        <option value="em_revisao_bancaria">Fase 3: Alinhamento de Covenants com Bancos</option>
+                        <option value="validado_oficial">Fase 4: Finalizado (Homologar e Liberar Estatuto)</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">3. Upload do Estatuto Definitivo (Sem Marca d'Água):</label>
+                    <input type="file" id="arquivo-estatuto-validado" class="w-full bg-gray-800 text-white border border-gray-700 p-2 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 transition">
+                </div>
+
+                <div class="mb-6">
+                    <label for="parecer-admin-texto" class="block text-sm text-gray-400 mb-2">4. Parecer do Advogado / Logs de Ajuste:</label>
+                    <textarea id="parecer-admin-texto" rows="4" class="w-full bg-gray-800 text-white border border-gray-700 p-4 rounded-xl focus:outline-none focus:border-[#991b1b] transition" placeholder="Escreva as alterações que você fez no rascunho ou recados ao cliente..."></textarea>
