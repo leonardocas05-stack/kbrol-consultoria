@@ -1,14 +1,13 @@
 import os
 from typing import Dict, Any, Optional
 from uuid import UUID
-from supabase import create_client, Client
-from services.notifications import enviar_email_homologacao
+from config import supabase
+from backend.services.notifications import enviar_email_homologacao
 
 # Inicialização do cliente Supabase utilizando variáveis de ambiente
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def iniciar_transicao_instantanea(
     usuario_id: str, 
