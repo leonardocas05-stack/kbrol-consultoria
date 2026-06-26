@@ -3,6 +3,20 @@
  * Responsável por: Gestão de auditorias globais e tickets de suporte
  */
 
+
+// =========================================================================
+// PONTE DE ESCOPO GLOBAL PARA O HTML (GARANTIA DE EXECUÇÃO)
+// =========================================================================
+window.carregarAdminAuditorias = carregarAdminAuditorias;
+window.carregarAdminTickets = carregarAdminTickets;
+window.carregarAdminHomologacao = carregarAdminHomologacao;
+window.abrirModalTicket = abrirModalTicket;
+window.fecharModalTicket = fecharModalTicket;
+window.enviarRespostaTicket = enviarRespostaTicket;
+window.abrirModalHomologacao = abrirModalHomologacao;
+window.fecharModalHomologacao = fecharModalHomologacao;
+window.salvarHomologacao = salvarHomologacao;
+
 // 1. PORTEIRO: Verifica acesso (Executa ao carregar o script)
 async function verificarAcessoAdmin() {
     if (!window.supabaseClient) return; // Segurança
@@ -265,15 +279,4 @@ async function salvarHomologacao(event) {
     }
 }
 
-// =========================================================================
-// PONTE DE ESCOPO GLOBAL PARA O HTML (GARANTIA DE EXECUÇÃO)
-// =========================================================================
-window.carregarAdminAuditorias = carregarAdminAuditorias;
-window.carregarAdminTickets = carregarAdminTickets;
-window.carregarAdminHomologacao = carregarAdminHomologacao;
-window.abrirModalTicket = abrirModalTicket;
-window.fecharModalTicket = fecharModalTicket;
-window.enviarRespostaTicket = enviarRespostaTicket;
-window.abrirModalHomologacao = abrirModalHomologacao;
-window.fecharModalHomologacao = fecharModalHomologacao;
-window.salvarHomologacao = salvarHomologacao;
+console.log("ADMIN.JS carregado com sucesso.");
