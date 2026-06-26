@@ -4,7 +4,7 @@ from typing import Dict, Any
 # 🔍 A CORREÇÃO: Reutiliza o cliente Supabase Singleton já configurado no seu config.py.
 # Isso evita o erro 'supabase_key is required' na Render, pois o config.py já gerencia isso.
 from config import supabase 
-from services.notifications import enviar_email_homologacao
+from .notifications import enviar_email_homologacao
 
 # APAGADO: O bloco de inicialização duplicado que lia variáveis de ambiente e
 # causava a exceção no servidor de hospedagem foi removido, simplificando o código.

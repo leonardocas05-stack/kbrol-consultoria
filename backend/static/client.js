@@ -54,10 +54,12 @@ const Client = {
 
             const data = await response.json();
 
-            // =================================================================
+           
             // APLICAÇÃO DO EFEITO UAU: Renderiza o rascunho da IA imediatamente
-            // =================================================================
             UI.renderizarResultado(data);
+
+            // Força o histórico do "Meu Painel" a se atualizar em segundo plano
+            Client.carregarDashboard();
 
             // Se o documento ainda não foi validado pelo advogado, ativa o monitoramento da linha do tempo
             if (data.status !== "validado_oficial") {
@@ -115,33 +117,94 @@ const Client = {
     async carregarDashboard() {
         const container = document.getElementById('lista-auditorias');
         if (!container) {
-            console.error("ERRO: Container não encontrado!");
+            console.error("ERRO: Container 'lista-auditorias' não encontrado!");
             return;
         }
+        
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Carregando histórico corporativo...</p>';
         
         try {
             const response = await fetch('/auditorias/listar', { headers: await Client.getHeaders() });
             const data = await response.json();
             
             if (!data.auditorias || data.auditorias.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center">Nenhuma auditoria encontrada.</p>';
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Nenhuma auditoria ou reorganização iniciada ainda.</p>';
                 return;
             }
 
-            const html = data.auditorias.map(aud => `
-                <div class="p-6 rounded-2xl bg-gray-900 border border-gray-800 flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="font-bold text-white">${aud.nome_arquivo || "Minuta"}</h3>
-                        <p class="text-sm text-gray-400">Data: ${new Date(aud.created_at).toLocaleDateString()}</p>
+            // Mapeamento de badges estáticos para o cabeçalho do card
+            const labelsStatus = {
+                'rascunho_gerado': '<span class="px-2 py-1 rounded-md text-[10px] font-black bg-blue-950 text-blue-400 border border-blue-900/50 uppercase">1. Rascunho IA</span>',
+                'em_revisao_contabil': '<span class="px-2 py-1 rounded-md text-[10px] font-black bg-purple-950 text-purple-400 border border-purple-900/50 uppercase">2. Contábil</span>',
+                'em_revisao_bancaria': '<span class="px-2 py-1 rounded-md text-[10px] font-black bg-orange-950 text-orange-400 border border-orange-900/50 uppercase">3. Bancos</span>',
+                'validado_oficial': '<span class="px-2 py-1 rounded-md text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-900/50 uppercase">4. Homologado</span>'
+            };
+
+            const html = data.auditorias.map(aud => {
+                const currentStatus = aud.status || 'rascunho_gerado';
+                const badgeHtml = labelsStatus[currentStatus] || labelsStatus['rascunho_gerado'];
+
+                return `
+                <div class="border border-gray-800 bg-gray-900 rounded-2xl mb-4 overflow-hidden transition-all duration-200">
+                    
+                    <div onclick="toggleAuditoriaDetalhe('${aud.id}')" class="p-5 flex justify-between items-center cursor-pointer hover:bg-gray-800/30 transition-colors select-none">
+                        <div class="space-y-1">
+                            <h3 class="font-bold text-white tracking-tight">${aud.nome_arquivo || "Estatuto Social Provisório"}</h3>
+                            <p class="text-xs text-gray-500 font-mono">ID: ${aud.id.slice(0, 8)}... • Entrada: ${new Date(aud.created_at).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            ${badgeHtml}
+                            <span id="seta-${aud.id}" class="text-gray-500 text-xs transition-transform duration-200 transform">▼</span>
+                        </div>
                     </div>
-                    <button onclick="Client.baixarPdf('${aud.id}')" class="px-4 py-2 rounded bg-gray-800 text-white hover:bg-[#991b1b]">📥 PDF</button>
-                </div>`).join('');
+                    
+                    <div id="detalhe-${aud.id}" class="hidden border-t border-gray-800 bg-gray-950/40 p-5 space-y-6">
+                        
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-2.5">Histórico de Evolução da Peça</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-[11px] font-bold">
+                                <div class="p-2 rounded-xl border border-emerald-900/30 bg-emerald-950/10 text-emerald-400">Rascunho IA</div>
+                                <div class="p-2 rounded-xl border ${['em_revisao_contabil', 'em_revisao_bancaria', 'validado_oficial'].includes(currentStatus) ? 'border-emerald-900/30 bg-emerald-950/10 text-emerald-400' : 'border-gray-800 bg-gray-900 text-gray-600'}">Revisão Contábil</div>
+                                <div class="p-2 rounded-xl border ${['em_revisao_bancaria', 'validado_oficial'].includes(currentStatus) ? 'border-emerald-900/30 bg-emerald-950/10 text-emerald-400' : 'border-gray-800 bg-gray-900 text-gray-600'}">Alinhamento Bancos</div>
+                                <div class="p-2 rounded-xl border ${currentStatus === 'validado_oficial' ? 'border-emerald-900/30 bg-emerald-950/10 text-emerald-400' : 'border-gray-800 bg-gray-900 text-gray-600'}">Homologado</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-900/50 border border-gray-800 p-4 rounded-xl">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-[#991b1b] mb-1">Notas de Despacho Técnico</p>
+                            <p class="text-xs text-gray-400 leading-relaxed">${aud.parecer_admin || "O rascunho automatizado foi gerado e aguarda triagem humana na fila do consultor especialista."}</p>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-gray-800/60">
+                            <button onclick="Client.baixarPdf('${aud.id}')" class="bg-gray-800 hover:bg-gray-700 text-white text-xs px-4 py-2 rounded-xl font-bold transition inline-flex items-center gap-1.5">
+                                📥 Baixar Laudo IA
+                            </button>
+                            
+                            ${aud.url_estatuto_validado ? `
+                                <a href="${aud.url_estatuto_validado}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2 rounded-xl font-bold transition inline-flex items-center gap-1.5">
+                                    📜 Baixar Peça Homologada
+                                </a>
+                            ` : `
+                                <button disabled class="bg-gray-950 border border-gray-800 text-gray-600 text-xs px-4 py-2 rounded-xl font-bold cursor-not-allowed inline-flex items-center gap-1.5">
+                                    🔒 Estatuto Homologado indisponível
+                                </button>
+                            `}
+
+                            <button onclick="abrirSuporteComContexto('${aud.id}', '${aud.nome_arquivo || 'Estatuto'}')" class="border border-[#991b1b]/30 hover:border-[#991b1b] text-red-400 hover:text-red-300 text-xs px-4 py-2 rounded-xl font-bold transition inline-flex items-center gap-1.5 ml-auto">
+                                🎫 Contestar ou Ajustar Peça
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+                `;
+            }).join('');
                 
             container.innerHTML = html;
                 
         } catch (e) { 
-            console.error("Erro no processamento:", e);
-            container.innerHTML = '<p class="text-red-500 text-center">Erro ao carregar histórico.</p>'; 
+            console.error("Erro no carregamento do painel:", e);
+            container.innerHTML = '<p class="text-red-500 text-center py-4">Falha ao conectar com o histórico do painel.</p>'; 
         }
     },
 
@@ -235,6 +298,47 @@ document.addEventListener('DOMContentLoaded', () => {
     Client.init(); // Ativa a inicialização segura do escopo
 });
 
+
+// INTERATIVIDADE DO HISTÓRICO EXPANSÍVEL
+
+// A. Controla o efeito sanfona (Accordion) dos cards de processos
+function toggleAuditoriaDetalhe(id) {
+    const painel = document.getElementById(`detalhe-${id}`);
+    const seta = document.getElementById(`seta-${id}`);
+    
+    if (painel && painel.classList.contains('hidden')) {
+        painel.classList.remove('hidden');
+        if (seta) seta.classList.add('rotate-180', 'text-[#991b1b]');
+    } else if (painel) {
+        painel.classList.add('hidden');
+        if (seta) seta.classList.remove('rotate-180', 'text-[#991b1b]');
+    }
+}
+
+// B. Abre a tela ou modal de suporte já preenchendo o ID e nome do arquivo sob contestação
+function abrirSuporteComContexto(auditoriaId, nomeArquivo) {
+    // Busca os inputs do formulário de tickets de suporte no seu HTML
+    const inputAssunto = document.getElementById('ticket-assunto');
+    const inputMensagem = document.getElementById('ticket-mensagem');
+    const modalSuporte = document.getElementById('modal-suporte');
+
+    if (inputAssunto) {
+        inputAssunto.value = `Ajuste Técnico - ${nomeArquivo}`;
+    }
+    if (inputMensagem) {
+        inputMensagem.value = `Prezada consultoria KBROL,\n\nGostaria de solicitar uma revisão específica no processo ID: ${auditoriaId} referente à reestruturação da minuta do arquivo "${nomeArquivo}".\n\n[Insira aqui os pontos de alteração desejados]:`;
+    }
+
+    // Se o seu sistema abrir o suporte por modal móvel, remove a trava de visualização
+    if (modalSuporte) {
+        modalSuporte.classList.remove('hidden');
+    } else {
+        // Caso use navegação de tela cheia, redireciona o cliente para a seção de perfil/suporte
+        if (typeof UI !== 'undefined') UI.trocarTela('tela-perfil');
+    }
+}
+
+
 // Pontes de escopo global para herança no HTML
 window.Client = Client;
 window.processarAuditoria = Client.processarAuditoria;
@@ -247,5 +351,7 @@ window.enviarTicket = () => {
         document.getElementById('ticket-mensagem').value
     );
 };
+window.toggleAuditoriaDetalhe = toggleAuditoriaDetalhe;
+window.abrirSuporteComContexto = abrirSuporteComContexto;
 
 console.log("CLIENT.JS carregado com sucesso.");

@@ -264,3 +264,16 @@ async function salvarHomologacao(event) {
         alert("Falha crítica na comunicação com o servidor: " + e.message);
     }
 }
+
+// =========================================================================
+// PONTE DE ESCOPO GLOBAL PARA O HTML (GARANTIA DE EXECUÇÃO)
+// =========================================================================
+window.carregarAdminAuditorias = carregarAdminAuditorias;
+window.carregarAdminTickets = carregarAdminTickets;
+window.carregarAdminHomologacao = carregarAdminHomologacao;
+window.abrirModalTicket = abrirModalTicket;
+window.fecharModalTicket = fecharModalTicket;
+window.enviarRespostaTicket = enviarRespostaTicket;
+window.abrirModalHomologacao = abrirModalHomologacao;
+window.fecharModalHomologacao = fecharModalHomologacao;
+window.salvarHomologacao = salvarHomologacao;
