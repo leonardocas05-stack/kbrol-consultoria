@@ -79,6 +79,32 @@ class MotorAuditoriaSA:
             erros.append("VETO (Art. 206 LSA): Estatuto deve prever claramente as causas e o procedimento de dissolução.")
         return erros
 
+    # --- NOVOS MÓDULOS DE VALIDAÇÃO RECOMENDADOS ---
+
+    def auditar_reserva_legal(self):
+        erros = []
+        # Art. 193 LSA - Cláusula obrigatória de proteção ao capital
+        if self.contrato.percentual_reserva_legal_obrigatoria != 5:
+            erros.append("VETO (Art. 193 LSA): O estatuto deve fixar a destinação obrigatória de 5% do lucro líquido para a Reserva Legal.")
+        if self.contrato.teto_reserva_legal_percentual != 20:
+            erros.append("VETO (Art. 193 LSA): O teto acumulado da Reserva Legal deve ser limitado a 20% do Capital Social.")
+        return erros
+
+    def auditar_conselho_administracao(self):
+        erros = []
+        # Art. 138 e 140 LSA - Se houver Conselho de Administração, mínimo de 3 membros
+        if self.contrato.possui_conselho_administracao:
+            if self.contrato.numero_membros_conselho_administracao < 3:
+                erros.append("VETO (Art. 140 LSA): Se instituído, o Conselho de Administração deve ser composto por no mínimo 3 membros.")
+        return erros
+
+    def auditar_estrutura_acoes(self):
+        erros = []
+        # Art. 11 e 15 LSA - Especificação técnica do tipo de capital
+        if not self.contrato.definicao_valor_nominal_acoes:
+            erros.append("VETO (Art. 11 LSA): O estatuto deve declarar expressamente se as ações possuem ou não valor nominal.")
+        return erros
+
     # --- ORQUESTRADOR ---
 
     def executar_auditoria_completa(self):
@@ -86,9 +112,12 @@ class MotorAuditoriaSA:
         lista_checagens = [
             self.auditar_conselho_fiscal(),
             self.auditar_administracao(),
+            self.auditar_conselho_administracao(),
             self.auditar_dividendos(),
+            self.auditar_reserva_legal(),
             self.auditar_assembleias(),
             self.auditar_identidade_e_capital(),
+            self.auditar_estrutura_acoes(),
             self.auditar_transformacao_e_dissidencia(),
             self.auditar_exercicio_e_dissolucao()
         ]

@@ -31,19 +31,22 @@ class ContratoSocietario(BaseModel):
     numero_diretores: int = 1
     administradores_com_impedimento_legal: bool = False
     
-    # Conselho Fiscal (Novo)
+    # Conselho Fiscal 
     conselho_fiscal_permanente: bool = False
     numero_membros_conselho_fiscal: int = 0
     
-    # Dividendos (Novo)
+    # Dividendos e Reservas Obrigatórias (Novo)
     percentual_dividendo_obrigatorio: Optional[float] = None
     regras_dividendos_definidas: bool = False
+    percentual_reserva_legal_obrigatoria: float = 0.0
+    teto_reserva_legal_percentual: float = 0.0
+    reserva_legal_prevista_percentual: float
     
-    # Assembleias (Novo)
+    # Assembleias 
     prazo_convocacao_assembleia_dias: int = 0
     quoruns_instalacao_previstos: bool = False
     
-    # Exercício e Dissolução (Novo)
+    # Exercício e Dissolução 
     exercicio_social_definido: bool = False
     previsao_demonstracoes_financeiras: bool = False
     regras_dissolucao_definidas: bool = False
