@@ -79,9 +79,25 @@ const Auth = {
             // 3. Redirecionamento (Side-effect necessário)
             window.location.href = '/'; 
         }
+    },
+
+    async carregarContadoresMetricas() {
+        try {
+            const response = await fetch('/publico/metricas-plataforma');
+            const data = await response.json();
+                
+            // Injeta os valores diretamente nos elementos correspondentes do DOM
+            if (document.getElementById('metrica-uploads')) {
+                document.getElementById('metrica-uploads').innerText = data.uploads;
+                document.getElementById('metrica-auditorias').innerText = data.auditorias;
+                document.getElementById('metrica-validados').innerText = data.validados;
+                    ocument.getElementById('metrica-downloads').innerText = data.downloads;
+            }
+        } catch (e) {
+             console.error("Erro ao processar (method) carregarContadoresMetricas:", e);
+         }
     }
 };
-
 // Ponte com o resto do código
 window.Auth = Auth;
 window.fazerLogin = Auth.fazerLogin;
@@ -290,3 +306,7 @@ const UI = {
 window.trocarTela = UI.trocarTela;
 window.exibirNomeArquivo = UI.exibirNomeArquivo;
 window.UI = UI;
+
+document.addEventListener('DOMContentLoaded', () => {
+    UI.carregarContadoresMetricas();
+});

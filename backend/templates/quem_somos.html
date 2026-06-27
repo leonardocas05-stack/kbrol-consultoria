@@ -13,31 +13,63 @@
         </button>
     </div>
 
-    <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-3xl font-black text-white text-center mb-12">Como a IA KBROL Trabalha</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center hover:border-[#991b1b] transition">
-                <div class="text-[#991b1b] text-4xl mb-4 font-black">01</div>
-                <h4 class="font-bold text-white mb-2">Upload</h4>
-                <p class="text-xs text-gray-400">Envie sua minuta (PDF/DOCX) com segurança.</p>
-            </div>
-            <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center hover:border-[#991b1b] transition">
-                <div class="text-[#991b1b] text-4xl mb-4 font-black">02</div>
-                <h4 class="font-bold text-white mb-2">Processamento</h4>
-                <p class="text-xs text-gray-400">Motor IA analisa os dados estruturados.</p>
-            </div>
-            <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center hover:border-[#991b1b] transition">
-                <div class="text-[#991b1b] text-4xl mb-4 font-black">03</div>
-                <h4 class="font-bold text-white mb-2">Auditoria</h4>
-                <p class="text-xs text-gray-400">Cruzamento com a LSA e jurisprudência.</p>
-            </div>
-            <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 text-center hover:border-[#991b1b] transition">
-                <div class="text-[#991b1b] text-4xl mb-4 font-black">04</div>
-                <h4 class="font-bold text-white mb-2">Download</h4>
-                <p class="text-xs text-gray-400">Laudo técnico e contrato corrigido.</p>
-            </div>
+    <div class="max-w-6xl mx-auto px-4 py-12">
+    <h2 class="text-3xl font-black text-center text-white mb-10 tracking-tight">Como a IA KBROL Trabalha</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="border border-gray-800 bg-gray-900/50 p-5 rounded-2xl text-center space-y-3">
+            <span class="text-3xl font-black text-red-700 block">01</span>
+            <h3 class="font-bold text-white text-base">Upload</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Envie sua minuta provisória (PDF/DOCX) com segurança encriptada.</p>
+        </div>
+
+        <div class="border border-gray-800 bg-gray-900/50 p-5 rounded-2xl text-center space-y-3">
+            <span class="text-3xl font-black text-red-700 block">02</span>
+            <h3 class="font-bold text-white text-base">Processamento</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Nossa IA Extratora mapeia e estrutura as variáveis contratuais essenciais.</p>
+        </div>
+
+        <div class="border border-gray-800 bg-gray-900/50 p-5 rounded-2xl text-center space-y-3">
+            <span class="text-3xl font-black text-red-700 block">03</span>
+            <h3 class="font-bold text-white text-base">Auditoria</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Cruzamento analítico contra a Lei das S.A. e jurisprudências do STJ e criação de uma "peça-IA".</p>
+        </div>
+
+        <div class="border border-red-900/40 bg-red-950/10 p-5 rounded-2xl text-center space-y-3 shadow-lg shadow-red-950/20">
+            <span class="text-3xl font-black text-red-500 block">04</span>
+            <h3 class="font-bold text-red-400 text-base">Homologação</h3>
+            <p class="text-xs text-gray-300 leading-relaxed">Revisão e despacho do consultor advogado, gerando a peça oficial sem erros.</p>
+        </div>
+
+        <div class="border border-gray-800 bg-gray-900/50 p-5 rounded-2xl text-center space-y-3">
+            <span class="text-3xl font-black text-red-700 block">05</span>
+            <h3 class="font-bold text-white text-base">Download</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Acesso instantâneo ao laudo de inteligência e ao estatuto validado.</p>
         </div>
     </div>
+
+    <div class="max-w-6xl mx-auto px-4 py-6 border-t border-gray-800/60 mt-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+            <span id="metrica-uploads" class="text-3xl font-black text-white font-mono">0</span>
+            <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500 mt-1">Minutas Recebidas</p>
+        </div>
+        <div>
+            <span id="metrica-auditorias" class="text-3xl font-black text-white font-mono">0</span>
+            <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500 mt-1">Análises de Risco IA</p>
+        </div>
+        <div>
+            <span id="metrica-validados" class="text-3xl font-black text-red-500 font-mono">0</span>
+            <p class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">Homologados por Advogados</p>
+        </div>
+        <div>
+            <span id="metrica-downloads" class="text-3xl font-black text-white font-mono">0</span>
+            <p class="text-[10px] uppercase tracking-widest font-bold text-gray-500 mt-1">Downloads Gerados</p>
+        </div>
+    </div>
+</div>
+
+</div>
 
     <div class="bg-gray-900 rounded-3xl p-10 md:p-14 shadow-xl border border-gray-800 mt-12 mx-4">
         <div class="text-center mb-12">
