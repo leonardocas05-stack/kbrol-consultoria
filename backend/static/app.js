@@ -68,7 +68,8 @@ const Auth = {
         try {
             if (!window.supabaseClient) return alert("Erro: Supabase não inicializado.");
 
-            // 1. Cria o usuário na tabela nativa de autenticação do Supabase
+            // 1. Cria o usuário no Supabase Auth 
+            // Os dados dentro de 'options.data' serão lidos pelo nosso gatilho SQL!
             const { data, error } = await window.supabaseClient.auth.signUp({
                 email: email,
                 password: senha,
@@ -80,21 +81,10 @@ const Auth = {
             if (error) throw error;
 
             if (data.user) {
-                // 2. Cria o registro complementar na tabela 'perfis'
-                // 🔍 CORREÇÃO: Linha 'email_usuario' removida para alinhar com o seu banco
-                const { error: perfilError } = await window.supabaseClient
-                    .from('perfis')
-                    .insert([
-                        { 
-                            id: data.user.id, 
-                            nome_empresa: nomeEmpresa, 
-                            role: 'user' 
-                        }
-                    ]);
-
-                if (perfilError) throw perfilError;
-
-                alert("Conta criada com sucesso! Você já pode fazer login.");
+                // 🔍 O perfil agora nasce AUTOMATICAMENTE no banco de dados via Trigger.
+                // Não precisamos mais fazer o insert manual pelo cliente!
+                
+                alert("Conta criada com sucesso! Enviamos um link de confirmação para o seu e-mail. Por favor, verifique sua caixa de entrada ou spam antes de tentar fazer login.");
                 UI.trocarTela('tela-login');
             }
         } catch (e) { 
