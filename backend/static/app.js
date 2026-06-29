@@ -63,6 +63,46 @@ const Auth = {
             UI.trocarTela('tela-dashboard');
         } catch (e) { alert("Erro de Login: " + e.message); }
     },
+
+    async fazerCadastro(email, senha, nomeEmpresa) {
+        try {
+            if (!window.supabaseClient) return alert("Erro: Supabase não inicializado.");
+
+            // 1. Cria o usuário na tabela nativa de autenticação do Supabase
+            const { data, error } = await window.supabaseClient.auth.signUp({
+                email: email,
+                password: senha,
+                options: {
+                    // Passa o nome da empresa nos metadados para triggers automatizados, se houver
+                    data: { nome_empresa: nomeEmpresa }
+                }
+            });
+
+            if (error) throw error;
+
+            if (data.user) {
+                // 2. Cria o registro complementar na sua tabela customizada 'perfis'
+                const { error: perfilError } = await window.supabaseClient
+                    .from('perfis')
+                    .insert([
+                        { 
+                            id: data.user.id, 
+                            email_usuario: email, 
+                            nome_empresa: nomeEmpresa, 
+                            role: 'user' 
+                        }
+                    ]);
+
+                if (perfilError) throw perfilError;
+
+                alert("Conta criada com sucesso! Você já pode fazer login.");
+                UI.trocarTela('tela-login');
+            }
+        } catch (e) { 
+            alert("Erro ao Criar Conta: " + e.message); 
+        }
+    },
+
     async fazerLogout() {
         console.log("Executando Logout...");
         try {
@@ -101,6 +141,7 @@ const Auth = {
 // Ponte com o resto do código
 window.Auth = Auth;
 window.fazerLogin = Auth.fazerLogin;
+window.fazerCadastro = Auth.fazerCadastro;
 window.fazerLogout = Auth.fazerLogout;
 
 
