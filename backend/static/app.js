@@ -73,7 +73,6 @@ const Auth = {
                 email: email,
                 password: senha,
                 options: {
-                    // Passa o nome da empresa nos metadados para triggers automatizados, se houver
                     data: { nome_empresa: nomeEmpresa }
                 }
             });
@@ -81,13 +80,13 @@ const Auth = {
             if (error) throw error;
 
             if (data.user) {
-                // 2. Cria o registro complementar na sua tabela customizada 'perfis'
+                // 2. Cria o registro complementar na tabela 'perfis'
+                // 🔍 CORREÇÃO: Linha 'email_usuario' removida para alinhar com o seu banco
                 const { error: perfilError } = await window.supabaseClient
                     .from('perfis')
                     .insert([
                         { 
                             id: data.user.id, 
-                            email_usuario: email, 
                             nome_empresa: nomeEmpresa, 
                             role: 'user' 
                         }
