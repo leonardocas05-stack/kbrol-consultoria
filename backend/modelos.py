@@ -28,6 +28,8 @@ class ContratoSocietario(BaseModel):
     
     # Governança e Administração
     conselho_administracao_estabelecido: bool
+    # 🟢 CONSERTO DO ATTRIBUTEERROR: Vincula o campo exato que a linha 96 do motor.py exige
+    possui_conselho_administracao: bool = False 
     numero_diretores: int = 1
     administradores_com_impedimento_legal: bool = False
     
@@ -55,4 +57,3 @@ class ContratoSocietario(BaseModel):
     # Extras
     objeto_social_preciso: bool
     registro_cvm: Optional[bool] = False
-    reserva_legal_prevista_percentual: float
