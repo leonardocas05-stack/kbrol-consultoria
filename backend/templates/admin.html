@@ -75,4 +75,21 @@
                     <input type="file" id="arquivo-estatuto-validado" class="w-full bg-gray-800 text-white border border-gray-700 p-2 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-gray-700 file:text-white hover:file:bg-gray-600 transition">
                 </div>
 
-                <div class="
+                <div class="mb-6">
+                    <label for="parecer-admin-texto" class="block text-sm text-gray-400 mb-2">4. Parecer do Advogado / Logs de Ajuste:</label>
+                    <textarea id="parecer-admin-texto" rows="4" class="w-full bg-gray-800 text-white border border-gray-700 p-4 rounded-xl focus:outline-none focus:border-[#991b1b] transition" placeholder="Escreva as alterações que você fez no rascunho ou recados ao cliente..."></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="fecharModalHomologacao()" class="text-gray-400 hover:text-white">Cancelar</button>
+                    <button type="submit" class="bg-[#991b1b] text-white px-6 py-2 rounded-lg font-bold hover:bg-[#7f1d1d] transition">Salvar Despacho</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script src="/static/client.js"></script>
+    <script src="/static/admin.js"></script>
+</body>
+</html>
