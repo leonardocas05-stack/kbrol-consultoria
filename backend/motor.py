@@ -96,7 +96,7 @@ class MotorAuditoriaSA:
 
     # --- ORQUESTRADOR ---
 
-    def ejecutar_auditoria_completa(self):
+    def executar_auditoria_completa(self):
         lista_checagens = [
             self.auditar_conselho_fiscal(),
             self.auditar_administracao(),
