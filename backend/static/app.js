@@ -158,7 +158,11 @@ const UI = {
                 }
             }
         }
+        if (idTelaAlvo === 'tela-dashboard') {
+            setTimeout(() => { UI.rodarInvestigacaoPainel(); }, 150);
+        }
         window.scrollTo(0, 0);
+        
     },
 
     // Atualiza o menu superior conforme o estado de login
@@ -459,7 +463,81 @@ async carregarContratoNoFormulario(idAuditoria) {
         console.error("Erro ao modular componentes:", err);
         containerMinuta.innerHTML = `<p class="text-center text-red-500 py-8">❌ Erro de conexão ao carregar minuta: ${err.message}</p>`;
     }
-}
+},
+async rodarInvestigacaoPainel() {
+        console.log("🕵️‍♂️ Varredura iniciada no Painel do Cliente...");
+        
+        const elObj = document.getElementById('debug-sub-obj');
+        const elToken = document.getElementById('debug-sub-token');
+        const elMemoria = document.getElementById('debug-sub-memoria');
+        const elBanco = document.getElementById('debug-sub-banco');
+        const errContainer = document.getElementById('debug-sub-erro-container');
+        const errMsg = document.getElementById('debug-sub-erro-msg');
+
+        if (!elObj) return; // Proteção caso a div não esteja renderizada na tela atual
+
+        // Reseta estados visuais de erro
+        errContainer.classList.add('hidden');
+
+        // 1. TESTE DO OBJETO CLIENTE
+        if (window.supabaseClient) {
+            elObj.textContent = "🟢 ONLINE (Pronto para receber Queries)";
+            elObj.className = "font-bold text-emerald-400";
+        } else {
+            elObj.textContent = "🔴 FALHA CRÍTICA (O Cliente JavaScript não foi iniciado)";
+            elObj.className = "font-bold text-red-400";
+            return;
+        }
+
+        // 2. TESTE DO LOCALSTORAGE TOKENS
+        const token = localStorage.getItem('sb_token');
+        if (token) {
+            elToken.textContent = `🟢 ATIVO (...${token.substring(0, 15)}...)`;
+            elToken.className = "font-bold text-emerald-400";
+        } else {
+            elToken.textContent = "🔴 VAZIO (Nenhum Token JWT guardado no navegador)";
+            elToken.className = "font-bold text-red-400";
+        }
+
+        // 3. TESTE DO ESTADO INTERNO DO APP
+        const userData = localStorage.getItem('user_data');
+        if (userData) {
+            elMemoria.textContent = `🟢 Carregado: ${userData}`;
+            elMemoria.className = "font-bold text-emerald-400 text-[11px]";
+        } else {
+            elMemoria.textContent = "⚠️ NENHUM DADO DE PERFIL EM MEMÓRIA LOCAL";
+            elMemoria.className = "font-bold text-amber-400";
+        }
+
+        // 4. TESTE DE QUERY NO BANCO (A HORA DA VERDADE)
+        try {
+            const sessionData = await window.supabaseClient.auth.getSession();
+            const sessionUser = sessionData.data.session?.user;
+
+            if (!sessionUser) {
+                throw new Error("O Supabase Auth informou que não há nenhuma sessão de usuário ativa para este navegador.");
+            }
+
+            // Realiza uma busca teste na tabela de auditorias
+            const { data, error } = await window.supabaseClient
+                .from('auditorias_contratos')
+                .select('id, status')
+                .limit(5);
+
+            if (error) throw error;
+
+            elBanco.textContent = `🟢 SUCESSO (${data ? data.length : 0} contratos encontrados na tabela)`;
+            elBanco.className = "font-bold text-emerald-400";
+
+        } catch (err) {
+            elBanco.textContent = "🔴 ERRO DE CONEXÃO / PERMISSÃO RLS";
+            elBanco.className = "font-bold text-red-400";
+            
+            // Exibe o contêiner de erro com a mensagem exata do Postgres/Supabase
+            errContainer.classList.remove('hidden');
+            errMsg.textContent = err.stack || err.message || JSON.stringify(err);
+        }
+    }
 };
 
 // Ponte com o resto do código
