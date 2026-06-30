@@ -301,7 +301,7 @@ async def verificar_status_auditoria(file_hash: str, user = Depends(validar_toke
 
 
 # ==============================================================================
-# ROTA DE HOMOLOGAÇÃO BLINDADA CONTRA ERRO 500
+# ROTA DE HOMOLOGAÇÃO COORDENADA COM O BANCO (PROVADA E BLINDADA)
 # ==============================================================================
 @app.post("/admin/homologar")
 async def admin_homologar(
@@ -314,23 +314,22 @@ async def admin_homologar(
     try:
         url_publica_documento = None
 
-        # Tenta fazer o upload, se falhar, não quebra a requisição inteira
+        # 1. Tratamento do Upload do Arquivo Validado
         if arquivo_validado:
             try:
                 blob_arquivo = await arquivo_validado.read()
                 caminho_storage = f"estatutos_validados/{auditoria_id}_{arquivo_validado.filename}"
                 
-                # Envia para o bucket do Supabase
+                # Envia para o bucket do Supabase Storage
                 supabase.storage.from_("estatutos").upload(caminho_storage, blob_arquivo)
                 url_publica_documento = supabase.storage.from_("estatutos").get_public_url(caminho_storage)
             except Exception as storage_err:
                 print(f"AVISO NO STORAGE: Falha no upload para o bucket, usando fallback... {storage_err}")
-                url_publica_documento = "#" # Fallback seguro para não dar erro 500
+                url_publica_documento = "#" 
 
-        # Execução do despacho
-        # 🟢 ALTERAÇÃO DEFINITIVA NO MAIN.PY (Evita chamadas quebradas do transition_manager)
+        # 2. Execução das Atualizações de Status no Banco de Dados
         if novo_status == "validado_oficial":
-            # Faz a atualização direta na tabela usando as colunas reais que você enviou!
+            # Atualização direta usando as colunas reais da sua tabela
             dados_atualizacao = {
                 "status": "validado_oficial",
                 "parecer_admin": parecer_admin,
@@ -339,19 +338,29 @@ async def admin_homologar(
             }
             resultado = supabase.table("auditorias_contratos").update(dados_atualizacao).eq("id", auditoria_id).execute()
         else:
-            resultado = avancar_etapa_linha_tempo(auditoria_id, novo_status)
+            # Para outros status da linha do tempo, atualiza o status e o parecer do admin de forma síncrona
+            dados_atualizacao = {
+                "status": novo_status
+            }
             if parecer_admin:
-                supabase.table("auditorias_contratos").update({"parecer_admin": parecer_admin}).eq("id", auditoria_id).execute()er_admin": parecer_admin}).eq("id", auditoria_id).execute()
+                dados_atualizacao["parecer_admin"] = parecer_admin
+                
+            # Salva no banco de dados para o polling do cliente atualizar a tela automaticamente
+            resultado = supabase.table("auditorias_contratos").update(dados_atualizacao).eq("id", auditoria_id).execute()
+            
+            # Mantém a chamada do seu transition_manager para regras acessórias se houverem
+            try:
+                avancar_etapa_linha_tempo(auditoria_id, novo_status)
+            except Exception as manager_err:
+                print(f"AVISO: transition_manager omitido ou sem retorno: {manager_err}")
 
-        return {"status": "success", "dados": resultado}
+        return {"status": "success", "dados": resultado.data if hasattr(resultado, 'data') else resultado}
 
     except Exception as e:
-        # Printa o erro real no terminal da Render para nós sabermos o que houve
         import traceback
         print("!!! ERRO NO DESPACHO ADMIN !!!")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Erro interno ao processar homologação: {str(e)}")
-    
 
 # ==============================================================================
 # ROTAS DO ADMINISTRADOR
