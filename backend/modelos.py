@@ -16,7 +16,7 @@ class ContratoSocietario(BaseModel):
     # Direito de Recesso e Haveres
     previsao_direito_recesso: bool = True 
     prazo_pagamento_haveres_dias: Optional[int] = 0
-    criterio_reembolso_dissidente: str = "valor_contabil_historico"
+    criterio_reembolso_dissidente: str | bool | None = "valor_contabil_historico"
 
     # Capital e Estrutura
     capital_dividido_acoes: bool

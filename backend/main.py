@@ -97,6 +97,8 @@ def processar_auditoria_completa(texto_contrato: str, user_id: str, file_hash: s
     try:
         # 1. Extração de Dados (Retorna dicionário de dados e modelo usado)
         dados_estruturados, mod1 = extratora_ia.extrair_dados_para_json(texto_contrato)
+        if dados_estruturados.get("criterio_reembolso_dissidente") is False:
+            dados_estruturados["criterio_reembolso_dissidente"] = "valor_contabil_historico"
         contrato_obj = ContratoSocietario(**dados_estruturados)
         
         # 2. Auditoria Regulatória (Motor de regras local)
