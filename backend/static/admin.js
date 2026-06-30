@@ -17,19 +17,7 @@ window.abrirModalHomologacao = abrirModalHomologacao;
 window.fecharModalHomologacao = fecharModalHomologacao;
 window.salvarHomologacao = salvarHomologacao;
 
-// 1. PORTEIRO: Verifica acesso (Executa ao carregar o script)
-async function verificarAcessoAdmin() {
-    if (!window.supabaseClient) return; // Segurança
-    const { data: { user } } = await window.supabaseClient.auth.getUser();
-    
-    if (!user) { window.location.href = 'index.html'; return; }
 
-    const { data: perfil, error } = await window.supabaseClient.from('perfis').select('role').eq('id', user.id).single();
-    if (error || !perfil || perfil.role !== 'admin') {
-        alert("Acesso Negado.");
-        window.location.href = 'index.html';
-    }
-}
 
 
 // Variável global para gerenciar tickets
@@ -276,6 +264,20 @@ async function salvarHomologacao(event) {
         }
     } catch (e) {
         alert("Falha crítica na comunicação com o servidor: " + e.message);
+    }
+}
+
+// 1. PORTEIRO: Verifica acesso (Executa ao carregar o script)
+async function verificarAcessoAdmin() {
+    if (!window.supabaseClient) return; // Segurança
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    
+    if (!user) { window.location.href = 'index.html'; return; }
+
+    const { data: perfil, error } = await window.supabaseClient.from('perfis').select('role').eq('id', user.id).single();
+    if (error || !perfil || perfil.role !== 'admin') {
+        alert("Acesso Negado.");
+        window.location.href = 'index.html';
     }
 }
 
