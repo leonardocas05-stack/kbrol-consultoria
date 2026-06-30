@@ -1,31 +1,17 @@
 /**
- * ADMIN.JS - Módulo Administrativo da KBROL
- * Responsável por: Gestão de auditorias globais e tickets de suporte
+ * ADMIN.JS - Módulo Administrativo da KBROL (REESTRUTURADO)
  */
-
-
-// =========================================================================
-// PONTE DE ESCOPO GLOBAL PARA O HTML (GARANTIA DE EXECUÇÃO)
-// =========================================================================
-window.carregarAdminAuditorias = carregarAdminAuditorias;
-window.carregarAdminTickets = carregarAdminTickets;
-window.carregarAdminHomologacao = carregarAdminHomologacao;
-window.abrirModalTicket = abrirModalTicket;
-window.fecharModalTicket = fecharModalTicket;
-window.enviarRespostaTicket = enviarRespostaTicket;
-window.abrirModalHomologacao = abrirModalHomologacao;
-window.fecharModalHomologacao = fecharModalHomologacao;
-window.salvarHomologacao = salvarHomologacao;
-
-
-
 
 // Variável global para gerenciar tickets
 let currentTicketId = null;
 
-// 2. CARREGAR AUDITORIAS (VISÃO GERAL)
-async function carregarAdminAuditorias() {
+// =========================================================================
+// DECLARAÇÃO GLOBAL DIRETA (IMPEDE QUE ERROS ABAIXO QUEBREM O ESCOPO)
+// =========================================================================
+
+window.carregarAdminAuditorias = async function() {
     const container = document.getElementById('admin-container');
+    if (!container) return;
     container.innerHTML = '<p class="text-gray-400">Carregando auditorias...</p>';
 
     try {
@@ -64,11 +50,11 @@ async function carregarAdminAuditorias() {
     } catch (e) {
         container.innerHTML = `<p class="text-red-500">Erro ao carregar: ${e.message}</p>`;
     }
-}
+};
 
-// 3. CARREGAR TICKETS (VERSÃO ÚNICA E OTIMIZADA)
-async function carregarAdminTickets() {
+window.carregarAdminTickets = async function() {
     const container = document.getElementById('admin-container');
+    if (!container) return;
     container.innerHTML = '<p class="text-gray-400">Carregando tickets...</p>';
     
     try {
@@ -103,59 +89,19 @@ async function carregarAdminTickets() {
     } catch (e) {
         container.innerHTML = '<p class="text-red-500">Erro ao carregar tickets.</p>';
     }
-}
+};
 
-// 4. LÓGICA DO MODAL
-function abrirModalTicket(ticketId) {
-    currentTicketId = ticketId;
-    document.getElementById('modal-responder-ticket').classList.remove('hidden');
-}
-
-function fecharModalTicket() {
-    currentTicketId = null;
-    document.getElementById('modal-responder-ticket').classList.add('hidden');
-}
-
-async function enviarRespostaTicket() {
-    const resposta = document.getElementById('resposta-ticket-texto').value;
-    if (!resposta) return alert("Digite uma resposta!");
-
-    try {
-        const response = await fetch(`/admin/tickets/responder/${currentTicketId}`, {
-            method: "POST",
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('sb_token') 
-            },
-            body: JSON.stringify({ resposta })
-        });
-
-        if (response.ok) {
-            alert("Resposta enviada!");
-            fecharModalTicket();
-            carregarAdminTickets(); // Recarrega a lista
-        }
-    } catch (e) {
-        alert("Erro ao enviar: " + e.message);
-    }
-}
-
-
-// 5. GESTÃO SOCIETÁRIA: FILA DE HOMOLOGAÇÃO & LINHA DO TEMPO (S.A.)
-
-// A. Carrega a tabela de contratos em fase de transição dentro do container
-async function carregarAdminHomologacao() {
+window.carregarAdminHomologacao = async function() {
     const container = document.getElementById('admin-container');
+    if (!container) return;
     container.innerHTML = '<p class="text-gray-400">Carregando fila de homologação societária...</p>';
 
     try {
-        // Reutiliza a rota de listagem trazendo o status de evolução
         const response = await fetch('/admin/auditorias/listar-todas', {
             headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') }
         });
         const data = await response.json();
 
-        // Mapeamento estético dos status vindos do Supabase para Badges legíveis
         const labelsStatus = {
             'rascunho_gerado': '<span class="px-2 py-1 rounded text-xs font-bold bg-blue-900 text-blue-300">1. Rascunho IA</span>',
             'em_revisao_contabil': '<span class="px-2 py-1 rounded text-xs font-bold bg-purple-900 text-purple-300">2. Contábil</span>',
@@ -200,86 +146,131 @@ async function carregarAdminHomologacao() {
     } catch (e) {
         container.innerHTML = `<p class="text-red-500">Erro ao renderizar a fila de homologação: ${e.message}</p>`;
     }
-}
+};
 
-// B. Abre o Modal de Despacho injetando os dados da linha selecionada
-function abrirModalHomologacao(auditoriaId, urlRascunho, statusAtual) {
+// =========================================================================
+// GESTÃO DE MODAIS E ENVIO DE FORMULÁRIOS
+// =========================================================================
+
+window.abrirModalTicket = function(ticketId) {
+    currentTicketId = ticketId;
+    document.getElementById('modal-responder-ticket')?.classList.remove('hidden');
+};
+
+window.fecharModalTicket = function() {
+    currentTicketId = null;
+    document.getElementById('modal-responder-ticket')?.classList.add('hidden');
+};
+
+window.enviarRespostaTicket = async function() {
+    const resposta = document.getElementById('resposta-ticket-texto').value;
+    if (!resposta) return alert("Digite uma resposta!");
+
+    try {
+        const response = await fetch(`/admin/tickets/responder/${currentTicketId}`, {
+            method: "POST",
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('sb_token') 
+            },
+            body: JSON.stringify({ resposta })
+        });
+
+        if (response.ok) {
+            alert("Resposta enviada!");
+            window.fecharModalTicket();
+            window.carregarAdminTickets();
+        }
+    } catch (e) {
+        alert("Erro ao enviar: " + e.message);
+    }
+};
+
+window.abrirModalHomologacao = function(auditoriaId, urlRascunho, statusAtual) {
     document.getElementById('homologar-auditoria-id').value = auditoriaId;
     document.getElementById('status-transicao').value = statusAtual || 'rascunho_gerado';
     
-    // Atualiza o botão de download para o advogado baixar a peça original gerada pela IA
     const btnDownload = document.getElementById('link-download-rascunho');
-    if (btnDownload) {
-        btnDownload.href = urlRascunho;
-    }
+    if (btnDownload) btnDownload.href = urlRascunho;
     
-    // Remove a classe hidden do Tailwind para o modal subir na tela
-    document.getElementById('modal-homologar-estatuto').classList.remove('hidden');
-}
+    document.getElementById('modal-homologar-estatuto')?.classList.remove('hidden');
+};
 
-// C. Fecha o Modal limpando os campos de controle
-function fecharModalHomologacao() {
+window.fecharModalHomologacao = function() {
     document.getElementById('homologar-auditoria-id').value = '';
     document.getElementById('arquivo-estatuto-validado').value = '';
     document.getElementById('parecer-admin-texto').value = '';
-    document.getElementById('modal-homologar-estatuto').classList.add('hidden');
-}
+    document.getElementById('modal-homologar-estatuto')?.classList.add('hidden');
+};
 
-// D. Intercepta o envio do formulário e faz o upload/update assíncrono para o servidor
-async function salvarHomologacao(event) {
-    event.preventDefault(); // Impede o recarregamento tradicional da página
+window.salvarHomologacao = async function(event) {
+    event.preventDefault();
 
     const auditoriaId = document.getElementById('homologar-auditoria-id').value;
     const novoStatus = document.getElementById('status-transicao').value;
     const parecer = document.getElementById('parecer-admin-texto').value;
     const inputArquivo = document.getElementById('arquivo-estatuto-validado');
 
-    // Como envolve upload de arquivo físico, precisamos empacotar tudo em um FormData
     const formData = new FormData();
     formData.append('auditoria_id', auditoriaId);
     formData.append('novo_status', novoStatus);
     formData.append('parecer_admin', parecer);
     
-    if (inputArquivo.files.length > 0) {
+    if (inputArquivo && inputArquivo.files.length > 0) {
         formData.append('arquivo_validado', inputArquivo.files[0]);
     }
 
     try {
         const response = await fetch('/admin/homologar', {
             method: 'POST',
-            headers: {
-                // Importante: Não passamos 'Content-Type' aqui porque o navegador calcula os limites do FormData sozinho
-                'Authorization': 'Bearer ' + localStorage.getItem('sb_token')
-            },
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') },
             body: formData
         });
 
         if (response.ok) {
-            alert("Despacho processado! O status foi atualizado e o cliente notificado.");
-            fecharModalHomologacao();
-            carregarAdminHomologacao(); // Recarrega a tabela para atualizar os badges na tela
+            alert("Despacho processado com sucesso!");
+            window.fecharModalHomologacao();
+            window.carregarAdminHomologacao();
         } else {
             const erroData = await response.json();
-            alert("Erro no processamento do despacho: " + (erroData.message || response.statusText));
+            alert("Erro no despacho: " + (erroData.message || response.statusText));
         }
     } catch (e) {
-        alert("Falha crítica na comunicação com o servidor: " + e.message);
+        alert("Falha de conexão: " + e.message);
     }
-}
+};
 
-// 1. PORTEIRO: Verifica acesso (Executa ao carregar o script)
+// =========================================================================
+// SAFELOCK: PORTEIRO DE SEGURANÇA COM BLINDAGEM TRY-CATCH
+// =========================================================================
 async function verificarAcessoAdmin() {
-    if (!window.supabaseClient) return; // Segurança
-    const { data: { user } } = await window.supabaseClient.auth.getUser();
-    
-    if (!user) { window.location.href = 'index.html'; return; }
+    if (!window.supabaseClient) {
+        console.warn("Aviso: Supabase Client não disponível para o porteiro.");
+        return;
+    }
+    try {
+        const { data: { user }, error: authError } = await window.supabaseClient.auth.getUser();
+        if (authError || !user) { window.location.href = '/'; return; }
 
-    const { data: perfil, error } = await window.supabaseClient.from('perfis').select('role').eq('id', user.id).single();
-    if (error || !perfil || perfil.role !== 'admin') {
-        alert("Acesso Negado.");
-        window.location.href = 'index.html';
+        const { data: perfil, error } = await window.supabaseClient
+            .from('perfis')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (error || !perfil || perfil.role !== 'admin') {
+            alert("Acesso Negado.");
+            window.location.href = '/';
+        }
+    } catch (err) {
+        // 🔥 CAPTURA O ERRO SEM QUEBRAR O RESTO DO SCRIPT
+        console.error("Erro controlado no Porteiro Admin:", err);
     }
 }
 
-verificarAcessoAdmin();
-console.log("ADMIN.JS carregado com sucesso.");
+// Inicialização segura após o mapeamento completo das funções
+document.addEventListener('DOMContentLoaded', () => {
+    verificarAcessoAdmin();
+});
+
+console.log("ADMIN.JS estruturado com sucesso globais ativos.");
