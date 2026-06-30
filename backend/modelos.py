@@ -20,6 +20,8 @@ class ContratoSocietario(BaseModel):
 
     # Capital e Estrutura
     capital_dividido_acoes: bool
+    # 🟢 CORREÇÃO 1: Vincula a variável de valor nominal exigida pelo motor.py
+    definicao_valor_nominal_acoes: bool = False 
     numero_socios: int = 2
     percentual_acoes_sem_voto: float
     capital_composto_bens: bool
@@ -28,8 +30,10 @@ class ContratoSocietario(BaseModel):
     
     # Governança e Administração
     conselho_administracao_estabelecido: bool
-    # 🟢 CONSERTO DO ATTRIBUTEERROR: Vincula o campo exato que a linha 96 do motor.py exige
+    # 🟢 CORREÇÃO 2: Vincula a checagem de existência do conselho exigida pelo motor.py
     possui_conselho_administracao: bool = False 
+    # 🟢 CORREÇÃO 3: Vincula o número de membros exigido na validação do conselho
+    numero_membros_conselho_administracao: int = 0 
     numero_diretores: int = 1
     administradores_com_impedimento_legal: bool = False
     
@@ -37,7 +41,7 @@ class ContratoSocietario(BaseModel):
     conselho_fiscal_permanente: bool = False
     numero_membros_conselho_fiscal: int = 0
     
-    # Dividendos e Reservas Obrigatórias (Novo)
+    # Dividendos e Reservas Obrigatórias
     percentual_dividendo_obrigatorio: Optional[float] = None
     regras_dividendos_definidas: bool = False
     percentual_reserva_legal_obrigatoria: float = 0.0
