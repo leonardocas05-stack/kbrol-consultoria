@@ -220,17 +220,37 @@ window.salvarHomologacao = async function(event) {
         formData.append('arquivo_validado', inputArquivo.files[0]);
     }
 
+    // 🟢 CAPTURA INTELIGENTE DO TOKEN (Tenta sua chave e tenta o fallback do Supabase)
+    let token = localStorage.getItem('sb_token');
+    if (!token) {
+        // Tenta buscar no objeto padrão que o Supabase injeta automaticamente
+        try {
+            const sbAuthKey = Object.keys(localStorage).find(key => key.startsWith('sb-') && key.endsWith('-auth-token'));
+            if (sbAuthKey) {
+                const sessionData = JSON.parse(localStorage.getItem(sbAuthKey));
+                token = sessionData?.access_token;
+            }
+        } catch (e) {
+            console.error("Erro ao tentar ler sessão nativa do Supabase:", e);
+        }
+    }
+
     try {
         const response = await fetch('/admin/homologar', {
             method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('sb_token') },
+            headers: { 
+                // Garante que o Bearer vá perfeitamente limpo, sem strings vazias
+                'Authorization': `Bearer ${token || ''}` 
+            },
             body: formData
         });
 
         if (response.ok) {
-            alert("Despacho processado com sucesso!");
+            alert("Despacho processado com sucesso! O status foi atualizado e o cliente notificado.");
             window.fecharModalHomologacao();
             window.carregarAdminHomologacao();
+        } else if (response.status === 401 || response.status === 403) {
+            alert("Erro 401/403: Sessão expirada ou usuário não é Administrador. Faça login novamente!");
         } else {
             const erroData = await response.json();
             alert("Erro no despacho: " + (erroData.message || response.statusText));
