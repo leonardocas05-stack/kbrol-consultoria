@@ -62,12 +62,17 @@ const Client = {
             Client.carregarDashboard();
 
             // Se o documento ainda não foi validado pelo advogado, ativa o monitoramento da linha do tempo
-            if (data.status !== "validado_oficial") {
-                UI.exibirStatus('status-processamento', "⏳ Rascunho da IA gerado! Acompanhe a revisão jurídica na linha do tempo abaixo.", "#fbbf24");
-                
-                // Dispara o monitoramento contínuo usando o hash do arquivo
+            if (data.status === "processando") {
+                // Se ainda está processando, avisa o usuário de forma honesta e liga o monitor
+                UI.exibirStatus('status-processamento', "⏳ O servidor recebeu a peça. Processando dados e gerando o modelo da S.A...", "#fbbf24");
                 Client.monitorarStatus(data.file_hash);
-            } else {
+            } 
+            else if (data.status === "rascunho_gerado") {
+                // Se o backend entregou o rascunho de forma instantânea
+                UI.exibirStatus('status-processamento', "⏳ Rascunho da IA gerado! Acompanhe a revisão jurídica na linha do tempo abaixo.", "#fbbf24");
+                Client.monitorarStatus(data.file_hash);
+            } 
+            else if (data.status === "validado_oficial") {
                 UI.exibirStatus('status-processamento', "✅ Reorganização societária homologada!", "#4ade80");
             }
             
