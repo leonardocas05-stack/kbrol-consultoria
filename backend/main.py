@@ -200,10 +200,23 @@ async def auditoria_arquivo(
         # Cache Check usando a instância 'supabase'
         cache = supabase.table("auditorias_contratos").select("laudo_json, id").eq("file_hash", file_hash).execute()
         if cache.data and len(cache.data) > 0:
-            res = json.loads(cache.data[0]["laudo_json"])
-            res["auditoria_id"] = cache.data[0]["id"]
-            return res
+            # 🟢 CORREÇÃO DA GAFE: Captura o dado com segurança usando .get()
+            conteudo_cache = cache.data[0].get("laudo_json")
+            
+            # Só reaproveita o cache se ele de fato contiver uma string JSON válida e não-nula
+            if conteudo_cache is not None:
+                try:
+                    res = json.loads(conteudo_cache)
+                    res["auditoria_id"] = cache.data[0]["id"]
+                    print(f"DEBUG: Cache recuperado com sucesso para o hash {file_hash}")
+                    return res
+                except Exception as json_err:
+                    print(f"AVISO: Falha ao decodificar JSON do cache, forçando reprocessamento: {json_err}")
+            else:
+                print(f"AVISO: Registro de cache encontrado com laudo_json nulo. Ignorando e forçando IA...")
         
+        # Processamento de texto tradicional (segue o fluxo normal caso o cache seja nulo ou inexistente)
+        extensao = arquivo.filename.split(".")[-1].lower()
         # Processamento de texto
         extensao = arquivo.filename.split(".")[-1].lower()
         conteudo_texto = ""
