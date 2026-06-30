@@ -241,7 +241,7 @@ const UI = {
         const corpoTextoMinuta = document.getElementById('corpo-texto-minuta');
         if (corpoTextoMinuta && data.contrato_reescrito) {
             corpoTextoMinuta.innerHTML = `
-                <p class="font-bold text-white text-center mb-6">ESTATUTO SOCIAL DA SOCIEDADE CAMPO NOBRE S.A.</p>
+                <p class="font-bold text-white text-center mb-6">ESTATUTO SOCIAL DA SOCIEDADE </p>
                 <div class="whitespace-pre-wrap leading-relaxed">${data.contrato_reescrito}</div>
             `;
         }
@@ -329,13 +329,145 @@ const UI = {
         // Revela o container inteiro e rola a tela suavemente para o resultado
         container.classList.remove('hidden');
         container.scrollIntoView({ behavior: 'smooth' });
+    },
+
+    async fazerCadastro(email, senha, nomeEmpresa) {
+        try {
+            if (!window.supabaseClient) return alert("Erro: Supabase não inicializado.");
+
+            // 1. Cria o usuário no Supabase Auth 
+            // Os dados dentro de 'options.data' serão lidos pelo nosso gatilho SQL!
+            const { data, error } = await window.supabaseClient.auth.signUp({
+                email: email,
+                password: senha,
+                options: {
+                    data: { nome_empresa: nomeEmpresa }
+                }
+            });
+
+            if (error) throw error;
+
+            if (data.user) {
+                // 🔍 O perfil agora nasce AUTOMATICAMENTE no banco de dados via Trigger.
+                // Não precisamos mais fazer o insert manual pelo cliente!
+                
+                alert("Conta criada com sucesso! Enviamos um link de confirmação para o seu e-mail. Por favor, verifique sua caixa de entrada ou spam antes de tentar fazer login.");
+                UI.trocarTela('tela-login');
+            }
+        } catch (e) { 
+            alert("Erro ao Criar Conta: " + e.message); 
+        }
+    },
+
+    // Adicione estes métodos dentro do seu objeto UI = { ... }
+
+/**
+ * Renderiza dinamicamente as linhas da tabela de homologação com dados reais.
+ * @param {Array} listaContratos - Array de objetos vindos da tabela 'auditorias_contratos'
+ */
+renderizarTabelaHomologacao(listaContratos) {
+    const tbody = document.getElementById('container-tabela-homologacao');
+    if (!tbody) return;
+
+    // Limpa a tabela antes de renderizar para não duplicar linhas
+    tbody.innerHTML = "";
+
+    if (listaContratos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 py-4">Nenhum contrato pendente de revisão.</td></tr>`;
+        return;
     }
+
+    // Mapeamento de estilos para as tags de status
+    const classesStatus = {
+        'rascunho': 'status-tag rascunho',
+        'em_revisao_contabil': 'status-tag contabil',
+        'em_revisao_bancaria': 'status-tag bancaria'
+    };
+
+    listaContratos.forEach(contrato => {
+        // Cria o elemento da linha
+        const tr = document.createElement('tr');
+        tr.className = "linha-pendente";
+
+        // Monta o HTML interno com as variáveis amarradas ao ID da auditoria
+        tr.innerHTML = `
+            <td><strong>${contrato.nome_empresa || 'Empresa Não Identificada'}</strong></td>
+            <td><span class="badge-arquivo">${contrato.nome_arquivo_original || 'documento.pdf'}</span></td>
+            <td><span class="${classesStatus[contrato.status] || 'status-tag rascunho'}">${contrato.status_formatado || 'Rascunho da IA'}</span></td>
+            <td>
+                <button class="btn-selecionar" onclick="UI.carregarContratoNoFormulario('${contrato.id}')">
+                    Revisar Peça
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+},
+
+/**
+ * Captura o clique da tabela, busca o texto correspondente e injeta no painel de visualização
+ * @param {string} idAuditoria - ID único do registro no Supabase
+ */
+async carregarContratoNoFormulario(idAuditoria) {
+    const containerMinuta = document.getElementById('corpo-texto-minuta');
+    if (!containerMinuta) return;
+
+    // Coloca um feedback de carregamento no painel de visualização
+    containerMinuta.innerHTML = `<p class="text-center text-amber-500 animate-pulse py-8">⚡ Puxando minuta encriptada do banco de dados...</p>`;
+
+    try {
+        // Busca a linha específica da auditoria direto no Supabase
+        const { data: contrato, error } = await window.supabaseClient
+            .from('auditorias_contratos')
+            .select('nome_empresa, contrato_reescrito, status')
+            .eq('id', idAuditoria)
+            .single();
+
+        if (error) throw error;
+
+        // Se o contrato existe e possui o texto gerado pela IA Advogado
+        if (contrato && contrato.contrato_reescrito) {
+            // Aplica ou remove efeitos visuais com base no status do documento
+            if (contrato.status === 'validado_oficial') {
+                containerMinuta.classList.remove('blur-[1px]', 'text-gray-400');
+                containerMinuta.classList.add('text-gray-200');
+            } else {
+                // Mantém o rascunho levemente embaçado para o administrador saber que é um rascunho
+                containerMinuta.classList.add('blur-[1px]', 'text-gray-400');
+                containerMinuta.classList.remove('text-gray-200');
+            }
+
+            // Injeta o cabeçalho dinâmico e o texto do contrato original formatado
+            containerMinuta.innerHTML = `
+                <p class="font-bold text-white text-center mb-6 uppercase tracking-tight">
+                    ESTATUTO SOCIAL DA SOCIEDADE ${contrato.nome_empresa} S.A.
+                </p>
+                <div class="whitespace-pre-wrap leading-relaxed space-y-3">
+                    ${contrato.contrato_reescrito}
+                </div>
+            `;
+            
+            // Guarda o ID do contrato ativo em uma variável global ou atributo de formulário
+            // para saber qual documento o administrador estará salvando ou corrigindo depois
+            containerMinuta.dataset.idContratoAtivo = idAuditoria;
+
+        } else {
+            containerMinuta.innerHTML = `<p class="text-center text-red-500 py-8">⚠️ O rascunho de texto desta minuta não foi localizado.</p>`;
+        }
+
+    } catch (err) {
+        console.error("Erro ao modular componentes:", err);
+        containerMinuta.innerHTML = `<p class="text-center text-red-500 py-8">❌ Erro de conexão ao carregar minuta: ${err.message}</p>`;
+    }
+}
 };
 
 // Ponte com o resto do código
 window.trocarTela = UI.trocarTela;
 window.exibirNomeArquivo = UI.exibirNomeArquivo;
 window.UI = UI;
+window.carregarContratoNoFormularo = UI.carregarContratoNoFormulario;
+window.carregarContratoNoFormulario = UI.carregarContratoNoFormulario;
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.carregarContadoresMetricas();

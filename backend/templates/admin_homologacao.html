@@ -4,32 +4,26 @@
     <p class="subtitulo">Gerencie os rascunhos da IA e controle as fases da linha do tempo dos clientes.</p>
 
     <div class="layout-duas-colunas">
-        
         <div class="card-painel coluna-lista">
-            <h3>Contratos Aguardando Revisão</h3>
-            <table class="tabela-homologacao">
-                <thead>
-                    <tr>
-                        <th>Empresa</th>
-                        <th>Arquivo Original</th>
-                        <th>Status Atual</th>
-                        <th>Ação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="linha-pendente">
-                        <td><strong>Campo Nobre Ltda.</strong></td>
-                        <td><span class="badge-arquivo">contrato_social_v1.pdf</span></td>
-                        <td><span class="status-tag rascunho">Rascunho da IA</span></td>
-                        <td>
-                            <button class="btn-selecionar" onclick="carregarContratoNoFormularo('id-da-auditoria')">
-                                Revisar Peça
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <h3>Contratos Aguardando Revisão</h3>
+        <table class="tabela-homologacao">
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>Arquivo Original</th>
+                    <th>Status Atual</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="container-tabela-homologacao"></tbody>
+        </table>
+    </div>
+
+<div class="text-sm text-gray-400 space-y-4 font-mono select-none" id="corpo-texto-minuta">
+    <p class="text-center text-gray-500 py-8 italic" id="texto-placeholder-minuta">
+        Selecione um contrato na lista ao lado para carregar a minuta gerada pela IA...
+    </p>
+</div>
 
         <div class="card-painel coluna-formulario" id="painel-despacho">
             <h3>Despacho Técnico do Advogado</h3>
