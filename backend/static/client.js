@@ -185,7 +185,7 @@ const Client = {
                                 📥 Baixar Laudo IA
                             </button>
                             
-                            ${aud.url_estatuto_validado ? `
+                            ${(aud.status === 'validado_oficial' && aud.url_estatuto_validado) ? `
                                 <a href="${aud.url_estatuto_validado}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-4 py-2 rounded-xl font-bold transition inline-flex items-center gap-1.5">
                                     📜 Baixar Peça Homologada
                                 </a>

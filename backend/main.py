@@ -297,7 +297,12 @@ async def verificar_status_auditoria(file_hash: str, user = Depends(validar_toke
             "url_estatuto_validado": row["url_estatuto_validado"]
         }
     
-    return {"status": "processando"}
+    return {
+    "status": row["status"],
+    "contrato_reescrito": laudo_dict.get("contrato_reescrito") if laudo_dict else None,
+    "parecer_admin": row["parecer_admin"] or "Aguardando parecer técnico.",
+    "url_estatuto_validado": row["url_estatuto_validado"] or ""
+}
 
 
 # ==============================================================================
