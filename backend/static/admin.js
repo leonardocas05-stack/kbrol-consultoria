@@ -30,7 +30,7 @@ async function verificarAcessoAdmin() {
         window.location.href = 'index.html';
     }
 }
-verificarAcessoAdmin();
+
 
 // Variável global para gerenciar tickets
 let currentTicketId = null;
@@ -279,4 +279,5 @@ async function salvarHomologacao(event) {
     }
 }
 
+verificarAcessoAdmin();
 console.log("ADMIN.JS carregado com sucesso.");
