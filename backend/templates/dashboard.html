@@ -1,28 +1,28 @@
-<div id="debug-painel-investigacao" class="hidden mb-6 p-4 bg-gray-950 border border-amber-900/50 rounded-xl font-mono text-xs text-amber-400 max-w-4xl mx-auto">
-        <div class="flex justify-between items-center border-b border-amber-900/30 pb-2 mb-2">
-        <span class="font-bold text-amber-500 flex items-center gap-1">🕵️‍♂️ KERNEL: MONITOR DE DIAGNÓSTICO DO PAINEL</span>
-        <button type="button" onclick="UI.rodarInvestigacaoPainel()" class="bg-amber-950 hover:bg-amber-900 px-3 py-1 rounded-lg text-[10px] text-amber-300 font-bold border border-amber-700 transition">
-            🔄 Rodar Varredura Real-Time
-        </button>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <div>
-            <p>📡 Objeto Supabase: <span id="debug-sub-obj" class="font-bold text-gray-400">Aguardando...</span></p>
-            <p>🔑 Token de Sessão: <span id="debug-sub-token" class="font-bold text-gray-400">Aguardando...</span></p>
-        </div>
-        <div>
-            <p>👤 Cache de Memória: <span id="debug-sub-memoria" class="font-bold text-gray-400">Aguardando...</span></p>
-            <p>📦 Banco de Dados: <span id="debug-sub-banco" class="font-bold text-gray-400">Aguardando...</span></p>
-        </div>
-    </div>
-    <div id="debug-sub-erro-container" class="mt-2 pt-2 border-t border-red-900/40 hidden">
-        <p class="text-red-400 font-bold">❌ Linha de Erro Capturada pelo Kernel:</p>
-        <p id="debug-sub-erro-msg" class="text-red-300 bg-red-950/50 p-2 rounded mt-1 border border-red-900/30 whitespace-pre-wrap"></p>
-    </div>
-</div>
-
 <div id="tela-dashboard" class="view-section hidden space-y-8 bg-[#0a0a0a] min-h-screen p-6">
     
+    <div id="debug-painel-investigacao" class="hidden mb-6 p-4 bg-gray-950 border border-amber-900/50 rounded-xl font-mono text-xs text-amber-400 max-w-4xl mx-auto">
+        <div class="flex justify-between items-center border-b border-amber-900/30 pb-2 mb-2">
+            <span class="font-bold text-amber-500 flex items-center gap-1">🕵️‍♂️ KERNEL: MONITOR DE DIAGNÓSTICO DO PAINEL</span>
+            <button type="button" onclick="UI.rodarInvestigacaoPainel()" class="bg-amber-950 hover:bg-amber-900 px-3 py-1 rounded-lg text-[10px] text-amber-300 font-bold border border-amber-700 transition">
+                🔄 Rodar Varredura Real-Time
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div>
+                <p>📡 Objeto Supabase: <span id="debug-sub-obj" class="font-bold text-gray-400">Aguardando...</span></p>
+                <p>🔑 Token de Sessão: <span id="debug-sub-token" class="font-bold text-gray-400">Aguardando...</span></p>
+            </div>
+            <div>
+                <p>👤 Cache de Memória: <span id="debug-sub-memoria" class="font-bold text-gray-400">Aguardando...</span></p>
+                <p>📦 Banco de Dados: <span id="debug-sub-banco" class="font-bold text-gray-400">Aguardando...</span></p>
+            </div>
+        </div>
+        <div id="debug-sub-erro-container" class="mt-2 pt-2 border-t border-red-900/40 hidden">
+            <p class="text-red-400 font-bold">❌ Linha de Erro Capturada pelo Kernel:</p>
+            <p id="debug-sub-erro-msg" class="text-red-300 bg-red-950/50 p-2 rounded mt-1 border border-red-900/30 whitespace-pre-wrap"></p>
+        </div>
+    </div>
+
     <div class="bg-gray-900 p-8 rounded-2xl shadow-xl border border-gray-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h2 class="text-3xl font-black text-white">Painel de Controle Societário</h2>
@@ -42,9 +42,13 @@
     <div id="lista-auditorias" class="space-y-6">
         <div class="animate-pulse space-y-4">
             <div class="p-6 rounded-2xl bg-gray-900 border border-gray-800 flex justify-between items-center">
-                <div class="space-y-3"><div class="h-4 bg-gray-800 rounded w-48"></div><div class="h-3 bg-gray-800 rounded w-32"></div></div>
+                <div class="space-y-3">
+                    <div class="h-4 bg-gray-800 rounded w-48"></div>
+                    <div class="h-3 bg-gray-800 rounded w-32"></div>
+                </div>
                 <div class="h-10 bg-gray-800 rounded w-20"></div>
             </div>
         </div>
     </div>
-</div>
+
+</div> 
