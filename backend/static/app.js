@@ -465,16 +465,30 @@ async carregarContratoNoFormulario(idAuditoria) {
     }
 },
 async rodarInvestigacaoPainel() {
-        console.log("🕵️‍♂️ Varredura iniciada no Painel do Cliente...");
+        console.log("🕵️‍♂️ Varredura do Kernel acionada...");
         
+        const painelDebug = document.getElementById('debug-painel-investigacao');
+        if (!painelDebug) return;
+
+        // 🔍 A TRAVA DE SEGURANÇA: Recupera os dados do usuário logado no cache
+        const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+        
+        // Se não for admin, garante que o painel suma e interrompe a execução aqui
+        if (userData.role !== 'admin') {
+            painelDebug.classList.add('hidden');
+            console.log("🔒 Acesso ao Monitor de Diagnóstico negado para usuários comuns.");
+            return;
+        }
+
+        // Se for admin, revela o painel e inicia a coleta de telemetria
+        painelDebug.classList.remove('hidden');
+
         const elObj = document.getElementById('debug-sub-obj');
         const elToken = document.getElementById('debug-sub-token');
         const elMemoria = document.getElementById('debug-sub-memoria');
         const elBanco = document.getElementById('debug-sub-banco');
         const errContainer = document.getElementById('debug-sub-erro-container');
         const errMsg = document.getElementById('debug-sub-erro-msg');
-
-        if (!elObj) return; // Proteção caso a div não esteja renderizada na tela atual
 
         // Reseta estados visuais de erro
         errContainer.classList.add('hidden');
@@ -500,16 +514,10 @@ async rodarInvestigacaoPainel() {
         }
 
         // 3. TESTE DO ESTADO INTERNO DO APP
-        const userData = localStorage.getItem('user_data');
-        if (userData) {
-            elMemoria.textContent = `🟢 Carregado: ${userData}`;
-            elMemoria.className = "font-bold text-emerald-400 text-[11px]";
-        } else {
-            elMemoria.textContent = "⚠️ NENHUM DADO DE PERFIL EM MEMÓRIA LOCAL";
-            elMemoria.className = "font-bold text-amber-400";
-        }
+        elMemoria.textContent = `🟢 Perfil Ativo: ${userData.nome} [${userData.role}]`;
+        elMemoria.className = "font-bold text-emerald-400 text-[11px]";
 
-        // 4. TESTE DE QUERY NO BANCO (A HORA DA VERDADE)
+        // 4. TESTE DE QUERY NO BANCO
         try {
             const sessionData = await window.supabaseClient.auth.getSession();
             const sessionUser = sessionData.data.session?.user;
@@ -518,7 +526,6 @@ async rodarInvestigacaoPainel() {
                 throw new Error("O Supabase Auth informou que não há nenhuma sessão de usuário ativa para este navegador.");
             }
 
-            // Realiza uma busca teste na tabela de auditorias
             const { data, error } = await window.supabaseClient
                 .from('auditorias_contratos')
                 .select('id, status')
@@ -532,8 +539,6 @@ async rodarInvestigacaoPainel() {
         } catch (err) {
             elBanco.textContent = "🔴 ERRO DE CONEXÃO / PERMISSÃO RLS";
             elBanco.className = "font-bold text-red-400";
-            
-            // Exibe o contêiner de erro com a mensagem exata do Postgres/Supabase
             errContainer.classList.remove('hidden');
             errMsg.textContent = err.stack || err.message || JSON.stringify(err);
         }
